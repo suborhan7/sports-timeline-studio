@@ -1,16 +1,35 @@
 // Lets the studio open offline and install as an app (from the Borhan Poster Studio).
-// Network first: online you always get the newest version; the saved copy is only used offline.
-const CACHE = "st-studio-v7";
-const FILES = ["./", "index.html", "manifest.webmanifest", "version.js", "css/app.css", "css/poster.css", "fonts/fonts.css", "fonts/AnekBangla-normal-100-800-bengali.woff2","fonts/AnekBangla-normal-100-800-latin.woff2","fonts/Atma-normal-400-bengali.woff2","fonts/Atma-normal-400-latin.woff2","fonts/Atma-normal-500-bengali.woff2","fonts/Atma-normal-500-latin.woff2","fonts/Atma-normal-600-bengali.woff2","fonts/Atma-normal-600-latin.woff2","fonts/Atma-normal-700-bengali.woff2","fonts/Atma-normal-700-latin.woff2","fonts/BalooDa2-normal-400-800-bengali.woff2","fonts/BalooDa2-normal-400-800-latin.woff2","fonts/BarlowCondensed-normal-500-latin.woff2","fonts/BarlowCondensed-normal-600-latin.woff2","fonts/BarlowCondensed-normal-700-latin.woff2","fonts/BarlowCondensed-normal-800-latin.woff2","fonts/BebasNeue-normal-400-latin.woff2","fonts/Galada-normal-400-bengali.woff2","fonts/Galada-normal-400-latin.woff2","fonts/HindSiliguri-normal-400-bengali.woff2","fonts/HindSiliguri-normal-400-latin.woff2","fonts/HindSiliguri-normal-500-bengali.woff2","fonts/HindSiliguri-normal-500-latin.woff2","fonts/HindSiliguri-normal-600-bengali.woff2","fonts/HindSiliguri-normal-600-latin.woff2","fonts/HindSiliguri-normal-700-bengali.woff2","fonts/HindSiliguri-normal-700-latin.woff2","fonts/Mina-normal-400-bengali.woff2","fonts/Mina-normal-400-latin.woff2","fonts/Mina-normal-700-bengali.woff2","fonts/Mina-normal-700-latin.woff2","fonts/NotoSerifBengali-normal-400-900-bengali.woff2","fonts/NotoSerifBengali-normal-400-900-latin.woff2","fonts/TiroBangla-italic-400-bengali.woff2","fonts/TiroBangla-italic-400-latin.woff2","fonts/TiroBangla-normal-400-bengali.woff2","fonts/TiroBangla-normal-400-latin.woff2",
-  "lib/html-to-image.js", "lib/bg-removal.js", "js/colors.js", "js/library.js", "js/brand.js", "js/core.js", "js/flags.js", "js/cards.js", "js/cards2.js", "js/i18n.js", "js/studio-edit.js", "js/app.js", "icons/icon-192.png"];
+// Two caches:
+//  - files that never change (fonts, libraries, flags, icons) are served from the phone straight away and kept across
+//    updates, so a new version does not download 3 MB again;
+//  - the studio's own files (html, js, css) are fetched fresh when the network answers within 3 s, otherwise the saved
+//    copy is used, so slow mobile data never holds the app up.
+const STATIC = "st-static-1", APP = "st-app";
+const VERSION = "v8";   // bump with version.js so phones pick up the new service worker
+const APP_FILES = ["./", "index.html", "manifest.webmanifest", "version.js", "css/app.css", "css/poster.css", "fonts/fonts.css",
+  "js/colors.js", "js/library.js", "js/brand.js", "js/core.js", "js/flags.js", "js/cards.js", "js/cards2.js", "js/i18n.js", "js/studio-edit.js", "js/app.js"];
+const isStatic = (u) => /\/(fonts\/.*\.woff2|lib\/|flags\/|icons\/)/.test(u);
 
-self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
-self.addEventListener("activate", (e) => { e.waitUntil(self.clients.claim()); });
+self.addEventListener("install", (e) => { e.waitUntil(caches.open(APP).then((c) => c.addAll(APP_FILES)).then(() => self.skipWaiting())); });
+self.addEventListener("activate", (e) => {
+  // drop the old per-version caches (st-studio-v1 … v7) that each held a full copy
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== STATIC && k !== APP).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+});
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(new URL(e.request.url).origin === location.origin ? new Request(e.request.url, { cache: "no-cache" }) : e.request)
-      .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); } return res; })
-      .catch(() => caches.match(e.request, { ignoreSearch: true }))
-  );
+  const req = e.request, url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== location.origin) return;
+  if (isStatic(url.pathname)) {
+    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+      if (res.ok) { const copy = res.clone(); caches.open(STATIC).then((c) => c.put(req, copy)); }
+      return res;
+    })));
+    return;
+  }
+  const net = fetch(new Request(req.url, { cache: "no-cache" })).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(APP).then((c) => c.put(req, copy)); }
+    return res;
+  });
+  const slow = new Promise((ok) => setTimeout(ok, 3000)).then(() => caches.match(req, { ignoreSearch: true }));
+  e.respondWith(Promise.race([net.catch(() => caches.match(req, { ignoreSearch: true })), slow.then((hit) => hit || net)])
+    .then((res) => res || net));
 });

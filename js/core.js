@@ -140,11 +140,21 @@
   };
 
   // AI background removal in the browser (@imgly/background-removal). The model downloads once, then is cached.
+  // The 700 KB library loads only when a cut-out is first needed, so opening the studio stays quick. Phones use the
+  // small model (44 MB instead of 88 MB): about twice as fast and much lighter on memory.
+  let bgLib;
+  const loadBgLib = () => bgLib ||= new Promise((ok, no) => {
+    if (window.BgRemoval) return ok();
+    const s = document.createElement('script'); s.src = 'lib/bg-removal.js'; s.onload = ok; s.onerror = () => { bgLib = null; no(new Error('library missing')); };
+    document.head.appendChild(s);
+  });
+  const phone = matchMedia('(max-width: 760px), (pointer: coarse)').matches;
   ST.cutOut = async (blobOrSrc, say = () => {}) => {
-    if (!window.BgRemoval) throw new Error('library missing');
     say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
+    await loadBgLib();
+    await new Promise(r => setTimeout(r, 50));   // let the message paint before the heavy work starts
     const blob = await BgRemoval.removeBackground(blobOrSrc, {
-      model: 'medium', proxyToWorker: false, output: { format: 'image/png', quality: 1 },
+      model: phone ? 'small' : 'medium', proxyToWorker: false, output: { format: 'image/png', quality: 1 },
       progress: (k, cur, total) => {
         if (k.startsWith('fetch') && total) say(`AI মডেল নামছে (প্রথমবার): ${Math.round(cur / total * 100)}%`);
         else if (k.startsWith('compute')) say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
