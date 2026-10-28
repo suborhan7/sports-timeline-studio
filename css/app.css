@@ -13,18 +13,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .frame.dragging { cursor: grabbing; }
 .act-bar { display: flex; gap: 10px; }
 
-.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; --logo-a: var(--cream); --logo-b: var(--gold); }
+.brand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 14px; --logo-a: var(--cream); --logo-b: var(--gold); }
 .brand-logo { width: 230px; line-height: 0; }
 .brand-logo svg { width: 100%; height: auto; }
 .brand b { display: block; color: var(--gold); font-size: 18px; }
 .brand small { color: var(--mut); }
+.ui-switch { margin-left: auto; display: flex; border: 1px solid var(--line); border-radius: 30px; overflow: hidden; flex: none; }
+.ui-switch button { border: 0; border-radius: 0; padding: 5px 10px; font-size: 12px; background: #0f1e16; }
+.ui-switch button.on { background: var(--gold); color: #1b1405; font-weight: 700; }
 
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
-.cards button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line);
+.cards { margin-bottom: 14px; }
+.shelves { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.shelves button { padding: 5px 12px; border-radius: 30px; font-size: 13px; background: #0f1e16; }
+.shelves button.on { background: var(--gold); color: #1b1405; border-color: var(--gold); font-weight: 700; }
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cards .card-grid button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line);
   background: #0f1e16; cursor: pointer; font-size: 13px; line-height: 1.2; text-align: center; }
-.cards button i { font-style: normal; font-size: 20px; }
-.cards button.on { background: var(--g2); border-color: var(--gold); color: #fff; }
-.cards button:hover { border-color: var(--g2); }
+.cards .card-grid button i { font-style: normal; font-size: 20px; }
+.cards .card-grid button.on { background: var(--g2); border-color: var(--gold); color: #fff; }
+.cards .card-grid button:hover { border-color: var(--g2); }
 
 .quick { margin-bottom: 12px; }
 .drop { display: block; padding: 14px; border: 2px dashed var(--g2); border-radius: 12px; text-align: center; cursor: pointer; background: #0f1e16; }
@@ -85,7 +92,10 @@ button:disabled { opacity: .5; }
   .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
   .stage { order: -1; position: sticky; top: 0; z-index: 10; padding: 10px; justify-content: flex-start; }
   .form { border-right: 0; padding: 16px; overflow: visible; }
-  .cards { grid-template-columns: repeat(4, 1fr); }
-  .cards button { font-size: 11px; }
+  .card-grid { grid-template-columns: repeat(4, 1fr); }
+  .cards .card-grid button { font-size: 11px; }
   .se-bar { position: static !important; }
+  .brand-logo { width: 170px; }
+  .form, .card-sec, .card-grid button { min-width: 0; }
+  .app { width: 100%; overflow-x: hidden; }
 }

@@ -142,15 +142,15 @@
   // AI background removal in the browser (@imgly/background-removal). The model downloads once, then is cached.
   ST.cutOut = async (blobOrSrc, say = () => {}) => {
     if (!window.BgRemoval) throw new Error('library missing');
-    say('ব্যাকগ্রাউন্ড কাটা হচ্ছে…');
+    say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
     const blob = await BgRemoval.removeBackground(blobOrSrc, {
       model: 'medium', proxyToWorker: false, output: { format: 'image/png', quality: 1 },
       progress: (k, cur, total) => {
         if (k.startsWith('fetch') && total) say(`AI মডেল নামছে (প্রথমবার): ${Math.round(cur / total * 100)}%`);
-        else if (k.startsWith('compute')) say('ব্যাকগ্রাউন্ড কাটা হচ্ছে…');
+        else if (k.startsWith('compute')) say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
       },
     });
-    say('কাট-আউট রেডি ✓');
+    say(ST.tr('কাট-আউট রেডি ✓ ~ Cut-out ready ✓'));
     return JerseyColors.trimTransparent(await JerseyColors.keepMainSubject(await ST.readFile(blob)));
   };
 

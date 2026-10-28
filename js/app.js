@@ -13,11 +13,19 @@
     card: 'news', size: 'portrait', theme: 'neo', pair: 'sporty', hf: 'Anek Bangla', bf: 'Hind Siliguri', hscale: 100,
     bn: true, pattern: true, logoStyle: 'stacked', logoPos: 'auto', logoColor: 'auto', logoA: '#ffffff', logoB: '#e0a030',
     foot: 'brand', slogan: 'সব খেলার গল্প, *একটাই টাইমলাইনে*', handle: 'fb.com/sportstimelinebd',
-    data: {}, layouts: {}, moves: {}, hidden: {},
+    ui: 'bn', lang: 'bn', group: '', data: {}, dataEn: {}, layouts: {}, moves: {}, hidden: {},
   });
   let state = fresh();
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* first visit or private mode */ }
-  for (const c of ST.CARDS) state.data[c.id] = Object.assign({}, c.data, state.data[c.id] || {});
+  // the example text and what the admin typed, kept apart for Bangla and English posters
+  for (const c of ST.CARDS) {
+    state.data[c.id] = Object.assign({}, c.data, state.data[c.id] || {});
+    state.dataEn[c.id] = Object.assign({}, c.dataEn || c.data, state.dataEn[c.id] || {});
+  }
+  const D = () => state.lang === 'en' ? state.dataEn : state.data;
+  const sample = c => (state.lang === 'en' && c.dataEn) || c.data;
+  const tr = ST.tr;
+  ST.ui = state.ui; ST.lang = state.lang;
   // pictures live only in memory (and in the photo library), never in localStorage
   const photos = {};          // card id -> [photo]
   const media = { bg: '', sponsor: '' };
@@ -34,7 +42,8 @@
   const say = t => { $('#status').textContent = t; };
 
   // ---------------------------------------------------------------- photo slots
-  const slotMode = (c, i, L) => { const s = c.photos[i]; return s.side && L === 'side' ? s.side : s.mode; };
+  // a slot can want another kind of picture in some layouts (modes: { photo: 'scene' } = the full photo, not the cut-out)
+  const slotMode = (c, i, L) => { const s = c.photos[i]; return (s.modes && s.modes[L]) || (s.side && L === 'side' ? s.side : s.mode); };
   // the picture to draw for a slot: the cut-out when the slot wants a cut-out and one is ready
   function shown(p, mode) {
     if (mode === 'cut' && p.cut) return p.cut;
@@ -49,7 +58,7 @@
       p.cut = { src, w: a.w, h: a.h, dx: 0, dy: 0, zoom: 1 };
       // the admin's nudges belong to the picture they see
       render();
-    } catch (e) { console.warn('cut-out failed', e); p.noCut = true; say('অটো কাট-আউট হয়নি (ইন্টারনেট লাগবে)। সাধারণ ছবি বসানো হলো।'); }
+    } catch (e) { console.warn('cut-out failed', e); p.noCut = true; say(tr('অটো কাট-আউট হয়নি (ইন্টারনেট লাগবে)। সাধারণ ছবি বসানো হলো। ~ Cut-out failed (needs internet). The plain photo is used.')); }
     busy.delete(p);
   }
 
@@ -71,7 +80,7 @@
   async function bulk(files) {
     const c = card(), list = [...files].filter(f => f.type.startsWith('image/'));
     if (!list.length) return;
-    say('ছবি দেখা হচ্ছে…');
+    say(tr('ছবি দেখা হচ্ছে… ~ Looking at the photos…'));
     const items = [];
     for (const f of list) { const src = await ST.readFile(f); items.push({ src, kind: ST.kindOf(await ST.analyse(src)) }); }
     const free = c.photos.map((s, i) => i).filter(i => !pics()[i]);
@@ -87,8 +96,8 @@
     }
     // pictures that found no empty slot replace the main photo
     const left = items.filter(it => !it.done);
-    if (left.length && !c.photos.length) say('এই কার্ডে ছবির জায়গা নেই।');
-    else say(`${used} টা ছবি বসানো হয়েছে${left.length ? ` (${left.length} টা বাকি: সব জায়গা ভরা)` : ''} ✓`);
+    if (left.length && !c.photos.length) say(tr('এই কার্ডে ছবির জায়গা নেই। ~ This card has no photo spots.'));
+    else say(state.ui === 'en' ? `${used} photo(s) placed${left.length ? ` (${left.length} left over: every spot is full)` : ''} ✓` : `${used} টা ছবি বসানো হয়েছে${left.length ? ` (${left.length} টা বাকি: সব জায়গা ভরা)` : ''} ✓`);
   }
 
   // ---------------------------------------------------------------- poster
@@ -132,30 +141,30 @@
     if (state.foot === 'sponsor') return `<div class="mv" data-move="foot"><div class="st-foot sponsor" style="top:${y}px;height:${fh}px">${media.sponsor ? `<img src="${media.sponsor}">` : '<div class="ph-hint" data-slot="sponsor">বিজ্ঞাপনের ব্যানার দিন</div>'}</div></div>`;
     // the strip logo is white with the theme accent
     return `<div class="mv" data-move="foot"><div class="st-foot" style="top:${y}px;height:${fh}px"><div class="slogan">${ST.rich(state.slogan, false)}</div>
-      <div class="handle">${ST.esc(state.handle)}</div><div class="follow">ফলো করুন ➜</div>
+      <div class="handle">${ST.esc(state.handle)}</div><div class="follow">${ST.t('ফলো করুন', 'Follow')} ➜</div>
       <div class="flogo" style="--logo-a:var(--pink);--logo-b:var(--acc)">${ST_BRAND.stacked}</div></div></div>`;
   }
 
   const poster = $('#poster');
   function render() {
-    ST.useBn = state.bn;
+    ST.useBn = state.bn; ST.lang = state.lang; ST.tagText = ST.TAGS[state.lang];
     const c = card(), L = layout(), Hh = H(), CB = Hh - footH(), th = theme(), hidden = (state.hidden[moveKey()] ||= {});
     const ph = (i, x, y, w, h, cls = '', mode) => {
       mode = mode || slotMode(c, i, L);
       const p = pics()[i], s = c.photos[i];
       if (!s) return '';
       const shape = cls.includes('crest') ? 'crest' : '';
-      if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(s.label.replace(/\s*\(.*\)/, ''))}</div></div>`;
+      if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(tr(s.label).replace(/\s*\(.*\)/, ''))}</div></div>`;
       const q = shown(p, mode);
       return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}"><img data-p="${i}" src="${q.src}" style="${ST.place(q, w, h, mode === 'cut' && q === p && !p.alpha ? 'scene' : mode)}"></div>`;
     };
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
-    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face };
+    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, t: ST.t };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
-    const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111' }).map(([k, v]) => `--${k}:${v}`).join(';')
+    const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111', ...(c.vars || {}) }).map(([k, v]) => `--${k}:${v}`).join(';')
       + `;--hf:'${state.hf}';--hw:${f.w || 700};--hs:${f.stretch || '100%'};--bf:'${state.bf}';--bw:${fb.bw || 500};height:${Hh}px`;
     const bg = media.bg ? `<div class="bgl image" style="background-image:url(${media.bg})"></div>` : `<div class="bgl ${state.pattern ? 'pattern' : ''} ${th.light ? 'light' : ''} ${th.flat ? 'flat' : ''}"></div>`;
-    poster.innerHTML = `<div class="st ${th.light ? 'light' : ''}" id="st" style="${vars}">${bg}${c.render(state.data[c.id], ctx)}${logoHtml(c, L, CB)}${footHtml()}</div>`;
+    poster.innerHTML = `<div class="st ${th.light ? 'light' : ''}" id="st" style="${vars}">${bg}${c.render(D()[c.id], ctx)}${logoHtml(c, L, CB)}${footHtml()}</div>`;
     const st = $('#st');
     // headline size slider: scales every headline-font block before fitting
     if (state.hscale !== 100) $$('.news-head,.q-text,.xi-team,.plist,.mega-status,.flash-band', st).forEach(el => { el.style.fontSize = parseFloat(getComputedStyle(el).fontSize) * state.hscale / 100 + 'px'; el.dataset.base = el.style.fontSize; });
@@ -166,7 +175,7 @@
     // a player slot with a name and no picture: try the photo library
     c.photos.forEach((s, i) => {
       if (!s.name || pics()[i] || !BPG.lib.ok()) return;
-      const nm = state.data[c.id][s.name]; if (!nm || libTried[c.id + i] === nm) return;
+      const nm = D()[c.id][s.name]; if (!nm || libTried[c.id + i] === nm) return;
       libTried[c.id + i] = nm;
       BPG.lib.find(nm).then(async r => { if (r[0] && r[0].score >= 2 && !pics()[i]) { await setPhoto(c.id, i, await ST.readFile(r[0].blob), nm); say(`লাইব্রেরি থেকে ${nm} এর ছবি বসানো হলো ✓`); } }).catch(() => {});
     });
@@ -240,29 +249,35 @@
   addEventListener('resize', fitFrame);
 
   // ---------------------------------------------------------------- form
+  // shelves (cricket, Test, football…) as tabs, then the cards on the open shelf
   function buildCards() {
-    $('#cards').innerHTML = ST.CARDS.map(c => `<button type="button" data-card="${c.id}" class="${c.id === state.card ? 'on' : ''}"><i>${c.icon}</i>${c.name}</button>`).join('');
+    const g = ST.GROUPS[state.group] ? state.group : card().group;
+    state.group = g;
+    $('#cards').innerHTML = `<div class="shelves">${Object.entries(ST.GROUPS).map(([k, v]) => `<button type="button" data-group="${k}" class="${k === g ? 'on' : ''}">${tr(v)}</button>`).join('')}</div>
+      <div class="card-grid">${ST.CARDS.filter(c => c.group === g).map(c => `<button type="button" data-card="${c.id}" class="${c.id === state.card ? 'on' : ''}"><i>${c.icon}</i>${tr(c.name)}</button>`).join('')}</div>`;
   }
   $('#cards').addEventListener('click', e => {
+    const s = e.target.closest('[data-group]'); if (s) { state.group = s.dataset.group; buildCards(); save(); return; }
     const b = e.target.closest('[data-card]'); if (!b) return;
     state.card = b.dataset.card; buildCards(); buildForm(); render(); StudioEdit.reset();
   });
 
   function buildForm() {
-    const c = card(), d = state.data[c.id];
-    $('#layout').innerHTML = Object.entries(c.layouts).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+    const c = card(), d = D()[c.id];
+    $('#layout').innerHTML = Object.entries(c.layouts).map(([k, v]) => `<option value="${k}">${tr(v)}</option>`).join('');
     $('#layout').value = layout();
     $('#fields').innerHTML = c.fields.map(([k, label, type, rows]) => {
-      if (type.startsWith('select:')) return `<label>${label}<select data-f="${k}">${type.slice(7).split(',').map(o => { const [v, t] = o.split('='); return `<option value="${v}">${t}</option>`; }).join('')}</select></label>`;
+      label = tr(label);
+      if (type.startsWith('select:')) return `<label>${label}<select data-f="${k}">${type.slice(7).split(',').map(o => { const [v, t] = o.split('='); return `<option value="${v}">${tr(t)}</option>`; }).join('')}</select></label>`;
       if (type === 'area') return `<label>${label}<textarea data-f="${k}" rows="${rows || 3}"></textarea></label>`;
       return `<label>${label}<input data-f="${k}"></label>`;
-    }).join('') + `<button type="button" class="small" id="resetText">উদাহরণের লেখা ফেরাও</button>`;
+    }).join('') + `<button type="button" class="small" id="resetText">${tr('উদাহরণের লেখা ফেরাও ~ Bring back the example text')}</button>`;
     $$('[data-f]', $('#fields')).forEach(i => { i.value = d[i.dataset.f] ?? ''; });
     buildPhotos();
   }
-  $('#fields').addEventListener('input', e => { const i = e.target.closest('[data-f]'); if (!i) return; state.data[state.card][i.dataset.f] = i.value; render(); });
-  $('#fields').addEventListener('change', e => { const i = e.target.closest('select[data-f]'); if (!i) return; state.data[state.card][i.dataset.f] = i.value; render(); });
-  $('#fields').addEventListener('click', e => { if (e.target.id !== 'resetText') return; state.data[state.card] = { ...card().data }; buildForm(); render(); });
+  $('#fields').addEventListener('input', e => { const i = e.target.closest('[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); });
+  $('#fields').addEventListener('change', e => { const i = e.target.closest('select[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); });
+  $('#fields').addEventListener('click', e => { if (e.target.id !== 'resetText') return; D()[state.card] = { ...sample(card()) }; buildForm(); render(); });
   $('#layout').addEventListener('change', e => { state.layouts[state.card] = e.target.value; render(); StudioEdit.reset(); });
 
   function buildPhotos() {
@@ -270,10 +285,10 @@
     $('#secPhotos').hidden = !c.photos.length;
     $('#photos').innerHTML = c.photos.map((s, i) => {
       const p = pics()[i];
-      return `<div class="slot"><div class="thumb">${p ? `<img src="${(p.cut || p).src}">` : '📷'}</div><div class="slot-body"><b>${s.label}</b>
-        <div class="slot-row"><label class="file">${p ? 'বদলাও' : 'ছবি দিন'}<input type="file" accept="image/*" data-slot-file="${i}"></label>
-        ${p ? `<button type="button" class="small" data-slot-clear="${i}">✕ সরাও</button>` : ''}
-        ${p && s.name && state.data[c.id][s.name] && BPG.lib.ok() ? `<button type="button" class="small" data-slot-save="${i}" title="এই নামে পরেরবার নিজে থেকেই বসবে">লাইব্রেরিতে রাখো</button>` : ''}</div></div></div>`;
+      return `<div class="slot"><div class="thumb">${p ? `<img src="${(p.cut || p).src}">` : '📷'}</div><div class="slot-body"><b>${tr(s.label)}</b>
+        <div class="slot-row"><label class="file">${tr(p ? 'বদলাও ~ Change' : 'ছবি দিন ~ Add photo')}<input type="file" accept="image/*" data-slot-file="${i}"></label>
+        ${p ? `<button type="button" class="small" data-slot-clear="${i}">✕ ${tr('সরাও ~ Remove')}</button>` : ''}
+        ${p && s.name && D()[c.id][s.name] && BPG.lib.ok() ? `<button type="button" class="small" data-slot-save="${i}" title="${tr('এই নামে পরেরবার নিজে থেকেই বসবে ~ Next time this name brings the photo by itself')}">${tr('লাইব্রেরিতে রাখো ~ Save to library')}</button>` : ''}</div></div></div>`;
     }).join('');
   }
   $('#photos').addEventListener('change', async e => {
@@ -282,9 +297,9 @@
   });
   $('#photos').addEventListener('click', async e => {
     const c = e.target.dataset.slotClear, s = e.target.dataset.slotSave;
-    if (c != null) { pics()[+c] = undefined; libTried[state.card + c] = state.data[state.card][card().photos[+c].name]; render(); buildPhotos(); }
+    if (c != null) { pics()[+c] = undefined; libTried[state.card + c] = D()[state.card][card().photos[+c].name]; render(); buildPhotos(); }
     if (s != null) {
-      const p = pics()[+s], name = state.data[state.card][card().photos[+s].name];
+      const p = pics()[+s], name = D()[state.card][card().photos[+s].name];
       const blob = await (await fetch((p.cut || p).src)).blob();
       await BPG.lib.add(name, blob); say(`"${name}" এর ছবি লাইব্রেরিতে রাখা হলো ✓ এরপর নাম লিখলেই বসে যাবে।`);
     }
@@ -310,10 +325,13 @@
   addEventListener('paste', e => { const f = [...(e.clipboardData || {}).files || []]; if (f.length) bulk(f); });
 
   // ---- style ----
-  const opt = (sel, obj, label = v => v.name) => { $(sel).innerHTML = Object.entries(obj).map(([k, v]) => `<option value="${k}">${label(v, k)}</option>`).join(''); };
-  opt('#size', ST.SIZES); opt('#pair', ST.FONT_PAIRS); opt('#hf', ST.FONTS); opt('#bf', ST.FONTS); opt('#logoColor', ST.LOGO_COLORS);
-  $('#themes').innerHTML = Object.entries(ST.THEMES).map(([k, t]) => `<button type="button" data-theme="${k}" title="${t.name}" style="--a:${t.bg || '#888'};--b:${t.acc || '#fff'}"><i></i><span>${t.name}</span></button>`).join('');
-  $('#fontStrip').innerHTML = Object.entries(ST.FONT_PAIRS).map(([k, p]) => `<button type="button" data-pair="${k}" style="font-family:'${p.head}';font-weight:${ST.FONTS[p.head].w};font-stretch:${ST.FONTS[p.head].stretch || '100%'}">খেলা</button>`).join('');
+  const opt = (sel, obj, label = v => tr(v.name)) => { const el = $(sel), v = el.value; el.innerHTML = Object.entries(obj).map(([k, o]) => `<option value="${k}">${label(o, k)}</option>`).join(''); if (v) el.value = v; };
+  function buildStyle() {
+    opt('#size', ST.SIZES); opt('#pair', ST.FONT_PAIRS); opt('#hf', ST.FONTS); opt('#bf', ST.FONTS); opt('#logoColor', ST.LOGO_COLORS);
+    $('#themes').innerHTML = Object.entries(ST.THEMES).map(([k, t]) => `<button type="button" data-theme="${k}" title="${tr(t.name)}" style="--a:${t.bg || '#888'};--b:${t.acc || '#fff'}"><i></i><span>${tr(t.name)}</span></button>`).join('');
+    $('#fontStrip').innerHTML = Object.entries(ST.FONT_PAIRS).map(([k, p]) => `<button type="button" data-pair="${k}" style="font-family:'${p.head}';font-weight:${ST.FONTS[p.head].w};font-stretch:${ST.FONTS[p.head].stretch || '100%'}">${state.lang === 'en' ? 'Play' : 'খেলা'}</button>`).join('');
+  }
+  buildStyle();
   const bind = (sel, key, ev = 'change', fn) => { const el = $(sel); if (el.type === 'checkbox') el.checked = state[key]; else el.value = state[key];
     el.addEventListener(ev, () => { state[key] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.value; fn && fn(); render(); }); };
   bind('#size', 'size', 'change', () => StudioEdit.reset());
@@ -365,10 +383,14 @@
   }, { passive: false });
 
   // ---------------------------------------------------------------- editor
-  const PARTS = { tag: 'লেবেল', head: 'শিরোনাম', body: 'বিস্তারিত', src: 'সূত্র', flash: 'ব্রেকিং ব্যান্ড', quote: 'উক্তি', mark: 'উদ্ধৃতি চিহ্ন', who: 'নাম ও পরিচয়',
-    comp: 'টুর্নামেন্ট', status: 'অবস্থা', board: 'স্কোর', names: 'দলের নাম', goals: 'গোলদাতা', note: 'নিচের লাইন', event: 'ম্যাচ', result: 'ফলাফল', b1: 'দল ১', b2: 'দল ২',
-    title: 'শিরোনাম', list: 'তালিকা', panel: 'প্যানেল', players: 'খেলোয়াড়', subs: 'বদলি', rows: 'সারি', sum: 'সারাংশ', tiles: 'টাইল', table: 'টেবিল', label: 'লেবেল', fact: 'তথ্য',
-    logo: 'লোগো', foot: 'নিচের স্ট্রিপ', p0: 'ছবি ১', p1: 'ছবি ২', p2: 'ছবি ৩' };
+  const PARTS = { tag: 'লেবেল ~ Label', head: 'শিরোনাম ~ Headline', body: 'বিস্তারিত ~ Details', src: 'সূত্র ~ Source', flash: 'ব্রেকিং ব্যান্ড ~ Breaking band', quote: 'উক্তি ~ Quote',
+    mark: 'উদ্ধৃতি চিহ্ন ~ Quote mark', who: 'নাম ও পরিচয় ~ Name and role', comp: 'টুর্নামেন্ট ~ Competition', status: 'অবস্থা ~ Status', board: 'স্কোর ~ Score', names: 'দলের নাম ~ Names',
+    goals: 'গোলদাতা ~ Scorers', note: 'নিচের লাইন ~ Line under', event: 'ম্যাচ ~ Match', result: 'ফলাফল ~ Result', b1: 'দল ১ ~ Team 1', b2: 'দল ২ ~ Team 2', title: 'শিরোনাম ~ Title',
+    list: 'তালিকা ~ List', panel: 'প্যানেল ~ Panel', players: 'খেলোয়াড় ~ Players', subs: 'বদলি ~ Substitutes', rows: 'সারি ~ Rows', sum: 'সারাংশ ~ Summary', tiles: 'টাইল ~ Tiles',
+    table: 'টেবিল ~ Table', label: 'লেবেল ~ Label', fact: 'তথ্য ~ Fact', info: 'ম্যাচের তথ্য ~ Match line', ghost: 'পেছনের বড় সংখ্যা ~ Big number behind', player: 'নাম ও তথ্য ~ Name and details',
+    stats: 'পরিসংখ্যান ~ Stats', score: 'স্কোর ~ Score', duck: 'ডাক স্ট্যাম্প ~ Duck stamp', word: 'বড় লেখা ~ Big word', balls: 'বল ~ Balls', text: 'লেখা ~ Text', foot: 'নিচের স্ট্রিপ ~ Footer strip',
+    potm: 'ম্যাচসেরা ~ Player of the match', coin: 'কয়েন ~ Coin', gauge: 'রেটিং ~ Rating', move: 'ক্লাব বদল ~ Move', face: 'দুই দল ~ Teams', when: 'তারিখ ও সময় ~ Date and time',
+    by: 'নাম ~ Signed', credit: 'ক্রেডিট ~ Credit', vs: 'বনাম ~ VS', logo: 'লোগো ~ Logo', p0: 'ছবি ১ ~ Photo 1', p1: 'ছবি ২ ~ Photo 2', p2: 'ছবি ৩ ~ Photo 3', p3: 'ছবি ৪ ~ Photo 4' };
   let editing = false;
   StudioEdit.init({
     frame, poster, state, render, panel: $('#form'), partsBox: $('#parts'), parts: PARTS, moveKey,
@@ -389,8 +411,8 @@
 
   // ---------------------------------------------------------------- caption
   function caption() {
-    const c = card(), d = state.data[c.id], strip = s => String(s || '').replace(/\*/g, '');
-    const tags = '#স্পোর্টস_টাইমলাইন #SportsTimeline';
+    const c = card(), d = D()[c.id], strip = s => String(s || '').replace(/\*/g, '');
+    const tags = state.lang === 'en' ? '#SportsTimeline' : '#স্পোর্টস_টাইমলাইন #SportsTimeline';
     const by = {
       news: () => `${strip(d.head)}\n\n${strip(d.body)}`, breaking: () => `⚡ ${strip(d.flash)}: ${strip(d.head)}\n${strip(d.body)}`,
       quote: () => `“${strip(d.quote)}”\n— ${d.name}${d.role ? `, ${d.role}` : ''}`,
@@ -402,10 +424,12 @@
       toplist: () => `${strip(d.title)} (${d.sub})\n\n${ST.rows(d.rows).map((r, i) => `${i + 1}. ${r[1]}: ${r[0]}`).join('\n')}`,
       table: () => `${d.title}: ${d.group}`, trivia: () => `💡 ${d.label}\n${strip(d.fact)}`,
     };
-    const txt = (by[c.id] || (() => ''))().trim();
+    // other cards: every filled field, one per line
+    const any = () => c.fields.map(f => d[f[0]]).filter(v => v && !/^[0-9]$/.test(v)).map(strip).join('\n');
+    const txt = (by[c.id] || any)().trim();
     return `${state.bn ? ST.bnDigits(txt) : txt}\n\n${tags}`;
   }
-  $('#copyCap').addEventListener('click', () => { navigator.clipboard.writeText($('#caption').value).then(() => say('ক্যাপশন কপি হয়েছে ✓')).catch(() => {}); });
+  $('#copyCap').addEventListener('click', () => { navigator.clipboard.writeText($('#caption').value).then(() => say(tr('ক্যাপশন কপি হয়েছে ✓ ~ Caption copied ✓'))).catch(() => {}); });
 
   // ---------------------------------------------------------------- download / share
   async function png() {
@@ -416,7 +440,7 @@
   }
   const fileName = () => `sports-timeline-${state.card}-${layout()}-${Date.now().toString(36)}.png`;
   async function act(btn, fn) {
-    const t = btn.textContent; btn.disabled = true; btn.textContent = 'তৈরি হচ্ছে…';
+    const t = btn.textContent; btn.disabled = true; btn.textContent = tr('তৈরি হচ্ছে… ~ Making…');
     try { await fn(); } catch (e) { if (e.name !== 'AbortError') alert('সমস্যা হয়েছে: ' + e.message); }
     btn.disabled = false; btn.textContent = t;
   }
@@ -430,14 +454,41 @@
     else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); say('এই ব্রাউজারে সরাসরি শেয়ার হয় না, ছবিটা ডাউনলোড হয়েছে।'); }
   }));
 
+  // ---------------------------------------------------------------- language
+  // panel text written in index.html is translated in place; the original Bangla is kept to switch back
+  const orig = new WeakMap();
+  function translateStatic() {
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('#poster, #cards, #fields, #photos, #parts, .se-bar, #themes, #fontStrip, select, textarea, #status') || !n.nodeValue.trim() ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    for (let n; (n = walk.nextNode());) { if (!orig.has(n)) orig.set(n, n.nodeValue); n.nodeValue = tr(orig.get(n)); }
+    $$('#logoStyle option, #logoPos option, #foot option, #lang option').forEach(o => { if (!orig.has(o)) orig.set(o, o.textContent); o.textContent = tr(orig.get(o)); });
+    document.documentElement.lang = state.ui;
+    $$('[data-ui]').forEach(b => b.classList.toggle('on', b.dataset.ui === state.ui));
+  }
+  function setUi(ui) {
+    state.ui = ST.ui = ui;
+    translateStatic(); buildStyle(); markStyle(); buildCards(); buildForm(); StudioEdit.relabel(); render();
+  }
+  function setLang(lang) {
+    state.lang = ST.lang = lang; state.bn = lang === 'bn';
+    // the slogan follows too, unless the admin wrote their own
+    const SLOGAN = { bn: fresh().slogan, en: 'Every game, *one timeline*' };
+    if (state.slogan === SLOGAN[lang === 'en' ? 'bn' : 'en']) { state.slogan = SLOGAN[lang]; $('#slogan').value = state.slogan; }
+    $('#bn').checked = state.bn; $('#lang').value = lang;
+    buildStyle(); markStyle(); buildForm(); render(); StudioEdit.reset();
+  }
+  // the panel switch also turns the poster to that language; "Poster language" can still mix them
+  $('#uiSwitch').addEventListener('click', e => { const b = e.target.closest('[data-ui]'); if (!b || b.dataset.ui === state.ui) return; setUi(b.dataset.ui); setLang(b.dataset.ui); });
+  $('#lang').value = state.lang;
+  $('#lang').addEventListener('change', e => setLang(e.target.value));
+
   // ---------------------------------------------------------------- start
   $('#brandLogo').innerHTML = ST_BRAND.wide;
   $('#ver').textContent = self.STUDIO_VERSION || '';
-  buildCards(); buildForm(); markStyle(); syncBrand();
+  buildCards(); buildForm(); markStyle(); syncBrand(); translateStatic();
   render();
   new ResizeObserver(fitFrame).observe(stage);
   document.fonts.ready.then(() => { render(); StudioEdit.reset(); });
   document.fonts.addEventListener('loadingdone', () => render());
-  window.__st = { state, photos, render, setPhoto, bulk, png };
+  window.__st = { state, photos, render, setPhoto, bulk, png, pick: id => { state.card = id; state.group = ''; buildCards(); buildForm(); render(); }, setUi, setLang };
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();

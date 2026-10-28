@@ -6,24 +6,26 @@ Plain HTML, CSS and JavaScript: no build step, no server, no account. Everything
 
 **Live:** https://suborhan7.github.io/sports-timeline-studio/ (after GitHub Pages is on, see below). On a phone, open it and use *Add to Home Screen* so it opens like an app.
 
-## Cards (12)
+## Cards (45)
 
-| Card | Layouts |
+The picker has shelves. Every card has two or three designs.
+
+| Shelf | Cards |
 | --- | --- |
-| ইনস্ট্যান্ট নিউজ (instant news) | Frame, side-by-side with green box, full photo |
-| ব্রেকিং নিউজ (breaking) | Red flash band, bold |
-| উক্তি (quote) | Photo on top, cut-out beside a quote panel, full photo |
-| ফুটবল স্কোর | Score bar under the photo, big number boxes, "ফুল-টাইম" diagonal |
-| ক্রিকেট স্কোর | Score bar (both innings, winner highlighted), full scorecard with top performers |
-| একাদশ (তালিকা) | List + player, white panel, bold numbered |
-| ফুটবল একাদশ (মাঠে) | Players placed on the pitch from the formation (4-3-3, 4-2-3-1…), green pitch or dark tactics board |
-| দল / স্কোয়াড | Columns by position, big title + player |
-| পরিসংখ্যান (stats) | List + summary strip, big tiles |
-| সেরা তালিকা (top list) | Bars (first highlighted), ranks |
-| পয়েন্ট টেবিল | Table, glass over a photo; top N highlighted |
-| আপনি জানেন কি? (trivia) | Photo + fact, full photo |
+| ক্রিকেট (cricket) | Cricket score, fifty, century, knock (X off Y, with a DUCK stamp on 0), big knock (bold), wicket, five-for, brilliant over, expensive over (ball by ball), score update, innings break (target worked out), match result + player of the match, result (bold), recent form (bar chart, 50+ highlighted), toss |
+| টেস্ট (Test) | Test hundred, Test fifty, Test five-for, stumps / lunch / tea (two innings), Test result with series line |
+| ফুটবল (football) | Football score, football XI on the pitch, goal, result (bold), red card, player rating (gauge), transfer (crest → crest), match day |
+| খবর ও সাধারণ (news & general) | Instant news, breaking news, quote, did you know?, status (in the XI, ruled out…), hot take, record / achievement, photo frame |
+| তুলনা (compare) | Player vs player (stats side by side or as bars, the better number highlighted; add ↓ to a stat where lower is better), who's better?, MVP / player of the month |
+| দল ও টেবিল (teams & tables) | Playing XI list, squad, stats, top list, points table, fixtures |
+
+Worked out for you: strike rate, economy, runs and wickets in an over, the chase target, form totals and average.
 
 Every card works in three sizes: post 4:5 (1080×1350), square (1080×1080) and story/reels (1080×1920).
+
+## Bangla or English
+
+The switch at the top turns the studio panel and the poster to English (labels, example text, words printed on the poster, digits). *পোস্টারের ভাষা* in রং আর ফন্ট lets you mix them, for example a Bangla panel with an English poster. Bangla and English text are kept apart, so switching never loses what you typed.
 
 ## Things that happen on their own
 
@@ -36,7 +38,7 @@ Every card works in three sizes: post 4:5 (1080×1350), square (1080×1080) and 
 - **Logo corner and colour**: the logo goes to the calmest allowed corner and turns green on a light spot, white/gold on a busy photo.
 - **Photo library**: save a player's photo once (*লাইব্রেরিতে রাখো*); next time his name is typed, the photo appears. Names on the football pitch card show faces from the library too.
 
-Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. *পোস্টারে কী কী থাকবে* switches parts on and off.
+Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
 
 ## Themes and fonts
 
@@ -60,7 +62,8 @@ Settings → Pages → Source: *Deploy from a branch*, Branch: `main`, Folder: `
 
 | File | What it is |
 | --- | --- |
-| `js/cards.js` | The cards: fields, photo slots, layouts and how each one is drawn. New cards go here. |
+| `js/cards.js`, `js/cards2.js` | The cards: fields, photo slots, layouts and how each one is drawn. New cards go here. |
+| `js/i18n.js` | Bangla / English: panel words and English example text |
 | `css/poster.css` | The poster look (themes come in as CSS variables) |
 | `js/core.js` | Themes, fonts, logo colours, Bangla text helpers, photo analysis and placement, cut-out, crest cleanup, font embedding for the PNG |
 | `js/app.js` | The studio page: form, photos, bulk drop, logo probe, editor, download, share, caption |

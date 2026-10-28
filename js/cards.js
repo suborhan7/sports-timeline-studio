@@ -232,7 +232,7 @@
         players: '1 মিতুল মারমা (GK)\n2 শাকিল আহাদ তপু\n5 তারিক কাজী\n4 তপু বর্মন\n3 সাদ উদ্দিন\n8 হামজা চৌধুরী\n6 জামাল ভূঁইয়া (c)\n10 সোহেল রানা\n7 রাকিব হোসেন\n9 মোরসালিন\n11 শমিত সোম',
         subs: 'সুজন, ফাহামেদুল, ঋদয়, মিতুল, রহমত, মোহাম্মদ হৃদয়', coach: 'হাভিয়ের কাবরেরা' },
       render(d, c) {
-        const { L, CB, P, sec, ph } = c;
+        const { L, CB, P, sec, ph, t } = c;
         const fx = 70, fy = 260, fw = 940, fh = CB - fy - (d.subs ? 200 : 90);
         const shape = [1].concat(String(ST.enDigits(d.formation)).split(/[^0-9]+/).map(Number).filter(n => n > 0));
         const all = ST.lines(d.players).map(ST.player);
@@ -243,13 +243,13 @@
             const p = all[k++] || { num: '', name: '', tags: [] }, x = fx + fw * (j + 1) / (n + 1);
             const face = c.face(p.name);
             return `<div class="pl" style="left:${Math.round(x)}px;top:${Math.round(y)}px"><div class="shirt">${face ? `<img src="${face}">` : P(p.num || (r ? '' : 'GK'))}</div>
-              <div class="pn" style="width:${Math.round(Math.min(230, fw / (n + 1) - 6))}px;left:${-Math.round(Math.min(230, fw / (n + 1) - 6) / 2)}px">${P(p.name)}${p.tags.includes('c') ? ' <em>(অধি.)</em>' : ''}</div></div>`;
+              <div class="pn" style="width:${Math.round(Math.min(230, fw / (n + 1) - 6))}px;left:${-Math.round(Math.min(230, fw / (n + 1) - 6) / 2)}px">${P(p.name)}${p.tags.includes('c') ? ` <em>(${t('অধি.', 'C')})</em>` : ''}</div></div>`;
           }).join('');
         }).join('');
         return sec('head', `<div class="pitch-head" style="${box(70, 110, 940, 130)}">${ph(0, 0, 0, 110, 110, 'crest inl')}<div><div class="xi-team" data-fit="w" data-min=".5">${P(d.title)}</div><div class="xi-sub">${P(d.team)}${d.formation ? ' · ' + P(d.formation) : ''}</div></div></div>`)
           + `<div class="field ${L}" style="${box(fx, fy, fw, fh)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
           + sec('players', `<div class="mv-in">${dots}</div>`)
-          + sec('subs', `<div class="subs" style="${box(70, CB - 175, 940, 150)}"><b>বদলি:</b> ${P(d.subs)}${d.coach ? `<div class="coach"><b>কোচ:</b> ${P(d.coach)}</div>` : ''}</div>`, !!(d.subs || d.coach));
+          + sec('subs', `<div class="subs" style="${box(70, CB - 175, 940, 150)}"><b>${t('বদলি', 'Subs')}:</b> ${P(d.subs)}${d.coach ? `<div class="coach"><b>${t('কোচ', 'Coach')}:</b> ${P(d.coach)}</div>` : ''}</div>`, !!(d.subs || d.coach));
       },
     },
 

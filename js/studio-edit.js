@@ -26,7 +26,7 @@
     const m = movesOf()[k] || {}, s = m.s || 1;
     return `transform:translate(${m.x || 0}px,${m.y || 0}px)${s !== 1 ? ` scale(${s})` : ''};transform-origin:${m.ox || 540}px ${m.oy || 675}px`;
   };
-  const label = k => (o.parts && o.parts[k]) || k;
+  const label = k => tr((o.parts && o.parts[k]) || k);
   const secEl = k => $(`[data-move="${k}"]`, o.poster);
   const photoEl = i => $(`[data-p="${i}"]`, o.poster);
 
@@ -144,25 +144,33 @@
   }
 
   // ---- toolbar ----
+  // labels written "বাংলা ~ English" follow the studio's language (ST.tr); without it the first part is used
+  const tr = s => (window.ST && ST.tr ? ST.tr(s) : s.split(' ~ ')[0]);
+  const NONE = 'পোস্টারে কিছুতে ক্লিক করুন ~ Click a part of the poster';
+  // one slim row: undo / redo / what is picked / help. The move + size buttons show only while something is picked,
+  // and the help text only after the ⓘ button, so the bar never covers much of the form while scrolling.
   function bar() {
     const el = document.createElement('div'); el.className = 'se-bar';
-    el.innerHTML = `<div class="se-row"><button type="button" data-se="undo" title="Ctrl+Z">↶ আগের মতো</button><button type="button" data-se="redo" title="Ctrl+Y">↷ আবার</button>
-        <span class="se-name">পোস্টারে ক্লিক করে কিছু বাছাই করুন</span></div>
+    el.innerHTML = `<div class="se-row"><button type="button" data-se="undo" title="${tr('আগের মতো ~ Undo')} (Ctrl+Z)">↶</button><button type="button" data-se="redo" title="${tr('আবার ~ Redo')} (Ctrl+Y)">↷</button>
+        <span class="se-name"></span><button type="button" data-se="help" class="se-help" title="${tr('কীভাবে ~ How to')}">ⓘ</button></div>
       <div class="se-row se-tools" hidden>
-        <button type="button" data-se="smaller" title="ছোট (−)">−</button><span class="se-pct">100%</span><button type="button" data-se="bigger" title="বড় (+)">+</button>
-        <button type="button" data-se="left" title="Bame (←)">←</button><button type="button" data-se="up" title="Upore (↑)">↑</button>
-        <button type="button" data-se="down" title="Niche (↓)">↓</button><button type="button" data-se="right" title="Dane (→)">→</button></div>
-      <div class="se-row se-tools" hidden><button type="button" data-se="center">মাঝে আনো</button><button type="button" data-se="resetone">এটা আগের মতো</button>
-        <button type="button" data-se="hide" class="se-hide">সরাও (Del)</button></div>
-      <p class="tip">ক্লিক = বাছাই। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন।</p>`;
-    el.addEventListener('click', e => { const b = e.target.closest('[data-se]'); if (b) act(b.dataset.se); });
+        <button type="button" data-se="smaller" title="${tr('ছোট ~ Smaller')} (−)">−</button><span class="se-pct">100%</span><button type="button" data-se="bigger" title="${tr('বড় ~ Bigger')} (+)">+</button>
+        <button type="button" data-se="left" title="←">←</button><button type="button" data-se="up" title="↑">↑</button><button type="button" data-se="down" title="↓">↓</button><button type="button" data-se="right" title="→">→</button>
+        <button type="button" data-se="center" title="${tr('মাঝে আনো ~ Centre')}">⊕</button><button type="button" data-se="resetone" title="${tr('এটা আগের মতো ~ Reset this')}">↺</button>
+        <button type="button" data-se="hide" class="se-hide" title="${tr('সরাও ~ Remove')} (Del)">✕</button></div>
+      <p class="tip" hidden>${tr('ক্লিক = বাছাই। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন। ~ Click = pick. Drag or use the arrow keys to move (Shift = 10px), mouse wheel or − / + to size, Delete removes, Ctrl+Z undoes, Esc lets go.')}</p>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-se]'); if (!b) return;
+      if (b.dataset.se === 'help') { const t = $('.tip', el); t.hidden = !t.hidden; return; }
+      act(b.dataset.se);
+    });
     return el;
   }
   function refreshBar() {
     const b = $('.se-bar', o.panel); if (!b) return;
     $('[data-se="undo"]', b).disabled = !undoStack.length; $('[data-se="redo"]', b).disabled = !redoStack.length;
     $$('.se-tools', b).forEach(r => r.hidden = !sel);
-    $('.se-name', b).textContent = sel ? 'বাছাই: ' + label(sel.kind === 'photo' ? 'p' + sel.i : sel.key) : 'পোস্টারে ক্লিক করে কিছু বাছাই করুন';
+    $('.se-name', b).textContent = sel ? tr('বাছাই ~ Picked') + ': ' + label(sel.kind === 'photo' ? 'p' + sel.i : sel.key) : tr(NONE);
     if (sel) $('.se-pct', b).textContent = Math.round((sel.kind === 'photo' ? o.photo.get(sel.i).zoom : (movesOf()[sel.key] || {}).s || 1) * 100) + '%';
   }
   function select(s) { sel = s; overlay(); refreshBar(); }
@@ -268,9 +276,9 @@
     const css = document.createElement('style');
     css.textContent = `.se-box{position:absolute;z-index:5;pointer-events:none;border:2px dashed #19e28a;border-radius:4px;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
       .se-guide{position:absolute;z-index:5;top:0;bottom:0;left:50%;width:0;border-left:1px dashed #ff3d8b;pointer-events:none;display:none}
-      .se-bar{position:sticky;top:-20px;z-index:4;margin:0 -20px 8px;padding:10px 20px 4px;background:#181c25;border-bottom:1px solid #262b37}
-      .se-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:6px}.se-row[hidden]{display:none}
-      .se-row button{padding:5px 9px}.se-row button:disabled{opacity:.4;cursor:default}
+      .se-bar{position:sticky;top:-20px;z-index:4;margin:0 -20px 8px;padding:6px 20px 0;background:#181c25;border-bottom:1px solid #262b37}
+      .se-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:6px}.se-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.se-bar .tip{font-size:12px;margin:0 0 8px;opacity:.85}.se-row[hidden]{display:none}
+      .se-row button{padding:3px 7px;min-width:30px}.se-row button:disabled{opacity:.4;cursor:default}
       .se-name{font-size:12px;color:#19e28a;margin-left:4px}.se-pct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}
       .se-hide{color:#ff8a9a}
       .mv{position:absolute;inset:0;pointer-events:none}.mv>*{pointer-events:auto;cursor:move}`;
@@ -350,5 +358,8 @@
   // positions settle after fonts/photos load: start the undo history from there
   const reset = () => { last = snap(); undoStack.length = 0; redoStack.length = 0; refreshBar(); };
 
-  window.StudioEdit = { init, afterRender, commit, reset, pick, hiddenOf: () => hiddenOf() };
+  // the studio's language changed: redraw the bar and the parts list in it
+  const relabel = () => { const b = $('.se-bar', o.panel); if (b) b.replaceWith(bar()); o.partsBox.dataset.keys = ''; parts(); refreshBar(); };
+
+  window.StudioEdit = { init, afterRender, commit, reset, pick, relabel, hiddenOf: () => hiddenOf() };
 })();
