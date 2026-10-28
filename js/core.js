@@ -13,13 +13,15 @@
   // ---- colour themes: every poster reads these CSS variables ----
   // bg/bg2 background, ink text on bg, mute soft text, acc accent (gold), acc2 second accent, pan panel, pink panel text
   ST.THEMES = {
-    green:   { name: 'টাইমলাইন সবুজ', bg: '#123524', bg2: '#1d5238', ink: '#fbf3e6', mute: '#b9d3c2', acc: '#e0a030', acc2: '#3ecf7a', pan: '#0b2619', pink: '#fbf3e6', logo: 'brand' },
-    pavilion:{ name: 'সাদা-সবুজ', bg: '#f6f8f4', bg2: '#e3efe6', ink: '#0f2d1d', mute: '#4d6b58', acc: '#1f8a4c', acc2: '#e0a030', pan: '#1f8a4c', pink: '#ffffff', logo: 'green', light: true },
-    cream:   { name: 'ক্রিম', bg: '#f5ecd9', bg2: '#ead9b8', ink: '#1f2a20', mute: '#6b6450', acc: '#b4441f', acc2: '#1d5238', pan: '#1d5238', pink: '#fbf3e6', logo: 'green', light: true },
-    night:   { name: 'রাত', bg: '#0c1016', bg2: '#18212d', ink: '#f4f7fb', mute: '#9aa8ba', acc: '#2fe39a', acc2: '#ffd34d', pan: '#141c26', pink: '#f4f7fb', logo: 'white' },
-    crimson: { name: 'লাল-সোনালি', bg: '#4a0b13', bg2: '#8c1424', ink: '#fff6ea', mute: '#f0c6c0', acc: '#ffc845', acc2: '#ff5a5f', pan: '#2e060b', pink: '#fff6ea', logo: 'brand' },
+    neo:     { name: 'নিয়ন রাত (নতুন)', bg: '#0a0c24', bg2: '#2b1470', ink: '#ffffff', mute: '#b9b6e3', acc: '#c6ff3d', acc2: '#7b5cff', pan: '#14123a', pink: '#ffffff', logo: 'whiteGold' },
+    sunset:  { name: 'সানসেট', bg: '#1a0826', bg2: '#7a1e5c', ink: '#ffffff', mute: '#f1c4da', acc: '#ffb703', acc2: '#ff4d6d', pan: '#2a0c35', pink: '#ffffff', logo: 'whiteGold' },
+    ocean:   { name: 'ওশান ব্লু', bg: '#03142b', bg2: '#0b4f8a', ink: '#ffffff', mute: '#a9cbe8', acc: '#00e5ff', acc2: '#2f6bff', pan: '#071f3d', pink: '#ffffff', logo: 'white' },
+    broadcast:{ name: 'ব্রডকাস্ট লাল', bg: '#0b0b0d', bg2: '#2a0d12', ink: '#ffffff', mute: '#c9c9cf', acc: '#ff2d46', acc2: '#ff8a00', pan: '#17171b', pink: '#ffffff', logo: 'white', accInk: '#ffffff' },
+    clean:   { name: 'সাদা মডার্ন', bg: '#f5f6fb', bg2: '#dfe4ff', ink: '#0d1033', mute: '#5b6085', acc: '#4f46e5', acc2: '#ff3d7f', pan: '#0d1033', pink: '#ffffff', logo: 'black', light: true, accInk: '#ffffff' },
+    mint:    { name: 'মিন্ট ফ্রেশ', bg: '#06221f', bg2: '#0f5b52', ink: '#ffffff', mute: '#a6dcd2', acc: '#5effc8', acc2: '#ffd23f', pan: '#0a302b', pink: '#ffffff', logo: 'whiteGold' },
+    green:   { name: 'টাইমলাইন সবুজ (পেজের রং)', bg: '#123524', bg2: '#1d5238', ink: '#fbf3e6', mute: '#b9d3c2', acc: '#e0a030', acc2: '#3ecf7a', pan: '#0b2619', pink: '#fbf3e6', logo: 'brand' },
+    pavilion:{ name: 'সাদা-সবুজ', bg: '#f6f8f4', bg2: '#d9efe0', ink: '#0f2d1d', mute: '#4d6b58', acc: '#1f8a4c', acc2: '#e0a030', pan: '#1f8a4c', pink: '#ffffff', logo: 'green', light: true, accInk: '#ffffff' },
     royal:   { name: 'রয়্যাল নীল', bg: '#0a2366', bg2: '#1846b8', ink: '#f3f6ff', mute: '#b7c6f0', acc: '#ffd23f', acc2: '#5ad1ff', pan: '#071848', pink: '#f3f6ff', logo: 'brand' },
-    purple:  { name: 'বেগুনি (প্রিমিয়ার লিগ)', bg: '#2a0838', bg2: '#5a1670', ink: '#fbf2ff', mute: '#d8bde3', acc: '#00ff85', acc2: '#ff2882', pan: '#1b0425', pink: '#fbf2ff', logo: 'white' },
     team:    { name: 'দলের রং (লোগো থেকে)', auto: true },
   };
 
@@ -100,7 +102,7 @@
     const ctx = cv.getContext('2d', { willReadFrequently: true }); ctx.drawImage(img, 0, 0, gw, gh);
     const d = ctx.getImageData(0, 0, gw, gh).data;
     let clear = 0, lum = 0, n = 0, sx = 0, sy = 0, sw = 0;
-    const L = new Float32Array(gw * gh);
+    const L = new Float32Array(gw * gh), skinY = [];
     for (let i = 0; i < gw * gh; i++) {
       const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], a = d[i * 4 + 3];
       if (a < 200) clear++;
@@ -112,7 +114,7 @@
       let e = Math.abs(L[i - 1] - L[i + 1]) + Math.abs(L[i - gw] - L[i + gw]);
       const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2];
       const skin = r > 95 && g > 40 && b > 20 && r > g && r > b && r - Math.min(g, b) > 15 && Math.abs(r - g) > 15;
-      if (skin) e *= 2.2;
+      if (skin) { e *= 2.2; skinY.push(y); }
       e *= 1.15 - Math.abs(x / gw - 0.5) * 0.5 - (y / gh) * 0.35;   // people are usually mid and upper
       if (e > 0) { sx += x * e; sy += y * e; sw += e; }
     }
@@ -122,6 +124,8 @@
       fx: sw ? Math.min(0.85, Math.max(0.15, sx / sw / gw)) : 0.5,
       fy: sw ? Math.min(0.7, Math.max(0.2, sy / sw / gh)) : 0.4,
       lum: n ? lum / n / 255 : 0.5,
+      // where the highest faces start (a low percentile of skin rows), so a crop never cuts off heads
+      ty: skinY.length > 12 ? skinY.sort((p, q) => p - q)[Math.floor(skinY.length * 0.06)] / gh : null,
     };
   };
 
@@ -207,10 +211,13 @@
       s = Math.max(bw / w, bh / h) * z;
       const iw = w * s, ih = h * s;
       left = Math.min(0, Math.max(bw - iw, bw / 2 - (p.fx ?? 0.5) * iw));
-      top = Math.min(0, Math.max(bh - ih, bh * 0.42 - (p.fy ?? 0.4) * ih));
+      // centre on the focus, but never lower than keeping the top face ~12% below the box's top edge
+      let want = bh * 0.42 - (p.fy ?? 0.4) * ih;
+      if (p.ty != null) want = Math.max(want, bh * 0.12 - p.ty * ih);
+      top = Math.min(0, Math.max(bh - ih, want));
     } else if (mode === 'cut') {
       const r = w / h;
-      s = (r > 0.95 ? Math.min(bw * 1.02 / w, bh / h) : Math.min(bh / h, bw * 1.25 / w)) * z;
+      s = (r > 0.95 ? Math.min(bw * 1.02 / w, bh * 0.95 / h) : Math.min(bh * 0.95 / h, bw * 1.25 / w)) * z;   // a little head room
       left = (bw - w * s) / 2; top = bh - h * s;
     } else {
       s = Math.min(bw / w, bh / h) * z;

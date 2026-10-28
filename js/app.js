@@ -4,13 +4,13 @@
    in this browser; photos stay on the device. */
 (function () {
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const KEY = 'st-studio-v1';
+  const KEY = 'st-studio-v2';
   // T wraps in a span: inside the flex text boxes a highlighted word must stay on the same line as the rest
   const P = (s) => ST.plain(s), T = (s) => `<span>${ST.rich(s)}</span>`;
 
   // ---------------------------------------------------------------- state
   const fresh = () => ({
-    card: 'news', size: 'portrait', theme: 'green', pair: 'sporty', hf: 'Anek Bangla', bf: 'Hind Siliguri', hscale: 100,
+    card: 'news', size: 'portrait', theme: 'neo', pair: 'sporty', hf: 'Anek Bangla', bf: 'Hind Siliguri', hscale: 100,
     bn: true, pattern: true, logoStyle: 'stacked', logoPos: 'auto', logoColor: 'auto', logoA: '#ffffff', logoB: '#e0a030',
     foot: 'brand', slogan: 'সব খেলার গল্প, *একটাই টাইমলাইনে*', handle: 'fb.com/sportstimelinebd',
     data: {}, layouts: {}, moves: {}, hidden: {},
@@ -59,7 +59,7 @@
     const c = ST.card(cid), slot = c.photos[i];
     let a = await ST.analyse(src);
     if (slot.mode === 'logo' && !a.alpha) { src = await ST.clearLogoBg(src); a = await ST.analyse(src); }
-    const p = { src, w: a.w, h: a.h, fx: a.fx, fy: a.fy, alpha: a.alpha, lum: a.lum, dx: 0, dy: 0, zoom: 1, name: keepName || '' };
+    const p = { src, w: a.w, h: a.h, fx: a.fx, fy: a.fy, ty: a.ty, alpha: a.alpha, lum: a.lum, dx: 0, dy: 0, zoom: 1, name: keepName || '' };
     (photos[cid] ||= [])[i] = p;
     if (slot.mode === 'logo' && slot.team) ST.logoColor(src).then(col => { if (col) { teamColors[slot.team] = col; render(); } }).catch(() => {});
     render(); buildPhotos();
@@ -130,10 +130,10 @@
     const fh = footH(); if (!fh) return '';
     const y = H() - fh;
     if (state.foot === 'sponsor') return `<div class="mv" data-move="foot"><div class="st-foot sponsor" style="top:${y}px;height:${fh}px">${media.sponsor ? `<img src="${media.sponsor}">` : '<div class="ph-hint" data-slot="sponsor">বিজ্ঞাপনের ব্যানার দিন</div>'}</div></div>`;
-    const lc = ST.LOGO_COLORS.brand;
+    // the strip logo is white with the theme accent
     return `<div class="mv" data-move="foot"><div class="st-foot" style="top:${y}px;height:${fh}px"><div class="slogan">${ST.rich(state.slogan, false)}</div>
       <div class="handle">${ST.esc(state.handle)}</div><div class="follow">ফলো করুন ➜</div>
-      <div class="flogo" style="--logo-a:${lc.a};--logo-b:${lc.b}">${ST_BRAND.stacked}</div></div></div>`;
+      <div class="flogo" style="--logo-a:var(--pink);--logo-b:var(--acc)">${ST_BRAND.stacked}</div></div></div>`;
   }
 
   const poster = $('#poster');
@@ -152,9 +152,9 @@
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
     const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
-    const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink }).map(([k, v]) => `--${k}:${v}`).join(';')
+    const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111' }).map(([k, v]) => `--${k}:${v}`).join(';')
       + `;--hf:'${state.hf}';--hw:${f.w || 700};--hs:${f.stretch || '100%'};--bf:'${state.bf}';--bw:${fb.bw || 500};height:${Hh}px`;
-    const bg = media.bg ? `<div class="bgl image" style="background-image:url(${media.bg})"></div>` : `<div class="bgl ${state.pattern ? 'pattern' : ''} ${th.light ? 'light' : ''}"></div>`;
+    const bg = media.bg ? `<div class="bgl image" style="background-image:url(${media.bg})"></div>` : `<div class="bgl ${state.pattern ? 'pattern' : ''} ${th.light ? 'light' : ''} ${th.flat ? 'flat' : ''}"></div>`;
     poster.innerHTML = `<div class="st ${th.light ? 'light' : ''}" id="st" style="${vars}">${bg}${c.render(state.data[c.id], ctx)}${logoHtml(c, L, CB)}${footHtml()}</div>`;
     const st = $('#st');
     // headline size slider: scales every headline-font block before fitting
@@ -186,7 +186,9 @@
       // a text box holding one wrapped span is measured by the span: Bangla letters reach past the line box, which
       // would make scrollHeight report an overflow at any size
       const kid = el.children.length === 1 && el.firstElementChild.tagName === 'SPAN' ? el.firstElementChild : null;
-      const over = () => (!wOnly && (kid ? kid.offsetHeight : el.scrollHeight) > el.clientHeight + 2) || el.scrollWidth > el.clientWidth + 2;
+      // right-aligned rows spill to the left, which scrollWidth never reports: check where the text really starts
+      const spillLeft = () => { const L = el.getBoundingClientRect().left - 1; return [...el.querySelectorAll('li > span')].some(c => c.getBoundingClientRect().left < L); };
+      const over = () => (!wOnly && (kid ? kid.offsetHeight : el.scrollHeight) > el.clientHeight + 2) || el.scrollWidth > el.clientWidth + 2 || spillLeft();
       if (!over()) return;
       let lo = min, hi = start;
       for (let i = 0; i < 9; i++) { const m = (lo + hi) / 2; el.style.fontSize = m + 'px'; if (over()) hi = m; else lo = m; }
@@ -219,7 +221,8 @@
         const mean = sum / n, varc = sq / n - mean * mean;
         if (!best || varc < best.varc - 0.004) best = { corner, mean, varc };
       }
-      const col = best.mean > 0.62 ? 'green' : best.varc > 0.03 ? 'whiteGold' : (theme().logo || 'brand');
+      const th = theme();
+      const col = best.mean > 0.55 ? (th.light ? th.logo : 'green') : best.varc > 0.03 ? 'whiteGold' : (th.light ? 'whiteGold' : th.logo || 'brand');
       auto = { corner: best.corner, color: col, key: k };
       render();
     } catch (e) { console.warn('logo probe', e); auto.key = k; }

@@ -203,15 +203,15 @@
       render(d, c) {
         const { L, CB, P, sec, ph } = c, pl = ST.lines(d.players);
         if (L === 'panel') {
-          return `<div class="blob" style="${box(520, CB * 0.28, 760, 760)}"></div>` + ph(0, 470, 160, 610, CB - 160, 'cut-glow')
+          return `<div class="blob" style="${box(560, CB * 0.3, 720, 720)}"></div>` + ph(0, 560, 240, 520, CB - 240, 'cut-glow')
             + sec('panel', `<div class="xi-panel" style="${box(60, 110, 500, CB - 170)}"><div class="xi-logos">${ph(1, 0, 0, 90, 90, 'crest inl')}</div>
                 <div class="xi-k">${P(d.kicker)}</div><div class="xi-team" data-fit="w" data-min=".5">${P(d.team)}</div><div class="xi-sub">${P(d.sub)}</div>
                 <ul class="plist" data-fit>${playerList(pl, P)}</ul></div>`);
         }
         if (L === 'bold') {
-          return ph(0, -20, 150, 620, CB - 150, 'cut-glow')
+          return ph(0, -10, 200, 560, CB - 200, 'cut-glow')
             + sec('title', `<div class="xi-bold-title" style="${box(400, 110, 620, 250)}"><div class="xi-team" data-fit="w" data-min=".4">${P(d.team)}</div><div class="xi-k">${P(d.kicker)}</div><div class="xi-sub">${P(d.sub)}</div></div>`)
-            + sec('list', `<ul class="plist num right" data-fit style="${box(470, 390, 550, CB - 440)}">${playerList(pl, P, true)}</ul>`);
+            + sec('list', `<ul class="plist num right" data-fit style="${box(560, 390, 460, CB - 440)}">${playerList(pl, P, true)}</ul>`);
         }
         return `<div class="wm-logo" style="${box(-60, 60, 520, 520)}">${ph(1, 0, 0, 520, 520, 'crest wm')}</div>` + ph(0, 450, 210, 630, CB - 210, 'cut-glow')
           + sec('title', `<div class="xi-title" style="${box(70, 140, 560, 230)}"><div class="xi-k">${P(d.kicker)}</div><div class="xi-team" data-fit="w" data-min=".5">${P(d.team)}</div><div class="xi-sub">${P(d.sub)}</div></div>`)
@@ -288,16 +288,16 @@
       data: { kicker: 'সাদমান ইসলাম', title: 'টেস্টে সেরা ওপেনার?', rows: '93 | পাকিস্তানের বিপক্ষে\n50 | ভারতের বিপক্ষে\n64 | ওয়েস্ট ইন্ডিজের বিপক্ষে\n120 | জিম্বাবুয়ের বিপক্ষে\n76 | শ্রীলঙ্কার বিপক্ষে\n80 | আয়ারল্যান্ডের বিপক্ষে\n99* | ওয়েস্ট ইন্ডিজের বিপক্ষে',
         sumTitle: '২০২৪ থেকে ব্যাটিং পরিসংখ্যান', sum: 'ইনিংস | 35\nরান | 1118\nগড় | 34.93\n১০০/৫০ | 1/8' },
       render(d, c) {
-        const { L, CB, P, sec, ph } = c, rows = ST.rows(d.rows), sum = ST.rows(d.sum);
+        const { L, CB, T, P, sec, ph } = c, rows = ST.rows(d.rows), sum = ST.rows(d.sum);
         const tiles = (y) => sec('sum', `<div class="sum" style="${box(60, y, 960, 190)}"><div class="sum-t">${P(d.sumTitle)}</div><div class="sum-row">${sum.map(r => `<div><small>${P(r[0])}</small><b>${P(r[1] || '')}</b></div>`).join('')}</div></div>`, sum.length > 0);
         if (L === 'tiles') {
           return ph(0, 520, 200, 560, CB * 0.55 - 80, 'cut-glow')
-            + sec('title', `<div class="st-title" style="${box(70, 150, 560, 260)}"><div class="xi-k">${P(d.kicker)}</div><div class="xi-team multi" data-fit data-min=".4">${P(d.title)}</div></div>`)
+            + sec('title', `<div class="st-title" style="${box(70, 150, 560, 260)}"><div class="xi-k">${P(d.kicker)}</div><div class="xi-team multi" data-fit data-min=".4">${T(d.title)}</div></div>`)
             + sec('tiles', `<div class="tile-grid" style="${box(60, CB * 0.55 + 140, 960, CB * 0.45 - 200)}">${rows.slice(0, 8).map(r => `<div><b>${P(r[0])}</b><span>${P(r[1] || '')}</span></div>`).join('')}</div>`)
             + tiles(CB * 0.55 - 60);
         }
         return ph(0, 470, 200, 610, CB - 410, 'cut-glow')
-          + sec('title', `<div class="st-title" style="${box(70, 130, 600, 250)}"><div class="xi-k">${P(d.kicker)}</div><div class="xi-team multi" data-fit data-min=".4">${P(d.title)}</div></div>`)
+          + sec('title', `<div class="st-title" style="${box(70, 130, 600, 250)}"><div class="xi-k">${P(d.kicker)}</div><div class="xi-team multi" data-fit data-min=".4">${T(d.title)}</div></div>`)
           + sec('rows', `<ul class="srows" data-fit style="${box(70, 400, 480, CB - 400 - 270)}">${rows.map(r => `<li><b>${P(r[0])}</b><span>${P(r[1] || '')}</span></li>`).join('')}</ul>`)
           + tiles(CB - 240);
       },

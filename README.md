@@ -30,7 +30,7 @@ Every card works in three sizes: post 4:5 (1080×1350), square (1080×1080) and 
 - **Photos find their place.** *সব ছবি একসাথে দিন* (or drop / paste pictures on the poster) looks at each picture: a crest goes to a logo slot, a player to the cut-out slot, a match photo to the photo slot.
 - **Background removal** for player photos (AI in the browser; needs internet the first time to download the model).
 - **Crests** on a plain white/black background get that background removed, and their colour feeds the *দলের রং* theme.
-- **News photos are cropped around the people** (detail + skin tone focus), not the middle of the grass.
+- **News photos are cropped around the people** (detail + skin tone focus) and never cut off the top of a head.
 - **Text always fits**: long headlines and lists shrink to their box. `*word*` colours a word.
 - **Bangla digits**: type 2-1 and the poster shows ২-১ (switch in রং আর ফন্ট).
 - **Logo corner and colour**: the logo goes to the calmest allowed corner and turns green on a light spot, white/gold on a busy photo.
@@ -40,7 +40,7 @@ Everything is still adjustable: click any part of the poster to drag it, size it
 
 ## Themes and fonts
 
-Themes: টাইমলাইন সবুজ (the page's green, default), সাদা-সবুজ, ক্রিম, রাত, লাল-সোনালি, রয়্যাল নীল, বেগুনি, দলের রং (from the crest), or your own background picture.
+Themes: নিয়ন রাত (default), সানসেট, ওশান ব্লু, ব্রডকাস্ট লাল, সাদা মডার্ন, মিন্ট ফ্রেশ, টাইমলাইন সবুজ (the page's own green), সাদা-সবুজ, রয়্যাল নীল, দলের রং (from the crest), or your own background picture. Backgrounds are soft colour glows with a dot grid; the footer strip follows the theme.
 
 Bangla fonts (all served from `fonts/`, OFL): Hind Siliguri, Anek Bangla, Tiro Bangla, Noto Serif Bengali, Galada, Baloo Da 2, Atma, Mina. Pick a one-tap pair, or set headline and body fonts separately, plus a headline size slider.
 
