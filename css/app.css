@@ -1,0 +1,91 @@
+/* The studio's own look (form, buttons, preview). The poster is styled in poster.css. */
+:root { --g: #123524; --g2: #1d5238; --gold: #e0a030; --cream: #fbf3e6; --bg: #0d1a13; --panel: #13241b; --line: #24392d; --txt: #e7efe9; --mut: #93a99b; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--txt); font: 15px/1.45 'Hind Siliguri', system-ui, sans-serif; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: 420px 1fr; height: 100vh; }
+.form { overflow-y: auto; padding: 20px; background: var(--panel); border-right: 1px solid var(--line); }
+.stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; min-width: 0; overflow: hidden;
+  background: radial-gradient(800px 600px at 50% 30%, #173726, var(--bg)); }
+.frame { position: relative; overflow: hidden; border-radius: 6px; box-shadow: 0 30px 80px rgba(0,0,0,.5); touch-action: none; flex: none; }
+.frame.over { outline: 4px dashed var(--gold); outline-offset: 6px; }
+#poster { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.frame.dragging { cursor: grabbing; }
+.act-bar { display: flex; gap: 10px; }
+
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; --logo-a: var(--cream); --logo-b: var(--gold); }
+.brand-logo { width: 230px; line-height: 0; }
+.brand-logo svg { width: 100%; height: auto; }
+.brand b { display: block; color: var(--gold); font-size: 18px; }
+.brand small { color: var(--mut); }
+
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+.cards button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line);
+  background: #0f1e16; cursor: pointer; font-size: 13px; line-height: 1.2; text-align: center; }
+.cards button i { font-style: normal; font-size: 20px; }
+.cards button.on { background: var(--g2); border-color: var(--gold); color: #fff; }
+.cards button:hover { border-color: var(--g2); }
+
+.quick { margin-bottom: 12px; }
+.drop { display: block; padding: 14px; border: 2px dashed var(--g2); border-radius: 12px; text-align: center; cursor: pointer; background: #0f1e16; }
+.drop.over, .drop:hover { border-color: var(--gold); }
+.drop input[type=file] { display: none; }
+.drop b { display: block; color: var(--gold); }
+.drop small { color: var(--mut); }
+.status { min-height: 18px; font-size: 13px; color: #7fe3a8; margin-top: 6px; }
+
+.card-sec { border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; margin-bottom: 10px; background: #102019; }
+.card-sec > summary { cursor: pointer; padding: 11px 0; font-weight: 700; color: var(--cream); list-style: none; }
+.card-sec > summary::before { content: '▸ '; color: var(--gold); }
+.card-sec[open] > summary::before { content: '▾ '; }
+.card-sec[open] { padding-bottom: 12px; }
+.card-sec[hidden] { display: none; }
+label { display: block; margin-bottom: 9px; font-size: 13px; color: var(--mut); }
+input:not([type=checkbox]):not([type=range]):not([type=color]):not([type=file]), select, textarea {
+  display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0b1610; color: var(--txt); font-size: 15px; }
+textarea { resize: vertical; line-height: 1.5; }
+input[type=color] { display: block; width: 100%; height: 36px; margin-top: 4px; border: 1px solid var(--line); border-radius: 8px; background: none; padding: 2px; }
+input[type=file] { display: block; margin-top: 4px; max-width: 100%; color: var(--mut); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; align-items: center; gap: 8px; color: var(--txt); }
+.range { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; }
+button { cursor: pointer; border: 1px solid var(--line); background: #1a2e23; border-radius: 8px; padding: 8px 12px; }
+button:hover { border-color: var(--g2); }
+button.small { padding: 5px 10px; font-size: 13px; }
+button.primary { background: var(--gold); color: #1b1405; border: 0; font-weight: 700; padding: 11px 22px; }
+button:disabled { opacity: .5; }
+
+.slot { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.slot:first-child { border-top: 0; }
+.thumb { width: 56px; height: 56px; border-radius: 10px; background: #0b1610 repeating-conic-gradient(#14241b 0 25%, #0b1610 0 50%) 0 0 / 12px 12px; display: grid; place-items: center; overflow: hidden; flex: none; font-size: 20px; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
+.slot-body { flex: 1; min-width: 0; }
+.slot-body b { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.slot-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.file { display: inline-block; margin: 0; padding: 5px 12px; border-radius: 8px; background: var(--g2); color: #fff; cursor: pointer; font-size: 13px; }
+.file input[type=file] { display: none; }
+
+.swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+.swatches button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; font-size: 11px; line-height: 1.15; }
+.swatches i { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--a) 55%, var(--b) 55%); border: 2px solid rgba(255,255,255,.2); }
+.swatches button[data-theme=team] i { background: conic-gradient(#d33, #fc3, #3a3, #36f, #d33); }
+.swatches button.on { border-color: var(--gold); background: #22392c; }
+.font-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+.font-strip button { font-size: 24px; padding: 4px 0; line-height: 1.4; }
+.font-strip button.on { border-color: var(--gold); background: #22392c; color: var(--gold); }
+.parts .check { margin-bottom: 4px; }
+#caption { font-size: 14px; }
+
+/* the editor bar from studio-edit.js, in the studio colours */
+.se-anchor { display: none; }
+.se-bar { background: #102019 !important; border-bottom-color: var(--line) !important; }
+.se-name { color: #7fe3a8 !important; }
+
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+  .stage { order: -1; position: sticky; top: 0; z-index: 10; padding: 10px; justify-content: flex-start; }
+  .form { border-right: 0; padding: 16px; overflow: visible; }
+  .cards { grid-template-columns: repeat(4, 1fr); }
+  .cards button { font-size: 11px; }
+  .se-bar { position: static !important; }
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>স্পোর্টস টাইমলাইন স্টুডিও</title>
+<meta name="theme-color" content="#123524">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ST Studio">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/poster.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+  <aside class="form" id="form">
+    <header class="brand"><div class="brand-logo" id="brandLogo"></div><div><b>স্টুডিও</b><small id="ver"></small></div></header>
+
+    <section class="cards" id="cards"></section>
+
+    <section class="quick">
+      <label class="drop" id="drop"><input type="file" accept="image/*" multiple id="bulk">
+        <b>📷 সব ছবি একসাথে দিন</b><small>খেলোয়াড়, লোগো, ম্যাচের ছবি: যেটা যেখানে মানায়, নিজে থেকেই বসে যাবে। পোস্টারের উপর টেনে ছেড়েও দিতে পারেন।</small></label>
+      <div class="status" id="status"></div>
+    </section>
+
+    <h2 class="se-anchor"></h2>
+    <details class="card-sec" open id="secContent"><summary>লেখা</summary>
+      <div class="two">
+        <label>ডিজাইন<select id="layout"></select></label>
+        <label>সাইজ<select id="size"></select></label>
+      </div>
+      <div id="fields"></div>
+    </details>
+
+    <details class="card-sec" open id="secPhotos"><summary>ছবি</summary>
+      <div id="photos"></div>
+      <label class="check"><input type="checkbox" id="autoCut" checked> খেলোয়াড়ের ছবির ব্যাকগ্রাউন্ড অটো কাটো (প্রথমবার ইন্টারনেট লাগবে)</label>
+    </details>
+
+    <details class="card-sec" open id="secStyle"><summary>রং আর ফন্ট</summary>
+      <div class="swatches" id="themes"></div>
+      <label>ফন্টের জোড়া (এক চাপে)<select id="pair"></select></label>
+      <div class="two">
+        <label>শিরোনামের ফন্ট<select id="hf"></select></label>
+        <label>লেখার ফন্ট<select id="bf"></select></label>
+      </div>
+      <div class="font-strip" id="fontStrip"></div>
+      <label class="range">শিরোনামের সাইজ <input type="range" id="hscale" min="70" max="130" step="5"><span id="hscaleV"></span></label>
+      <label class="check"><input type="checkbox" id="bn"> সংখ্যা বাংলায় (2 → ২)</label>
+      <label class="check"><input type="checkbox" id="pattern"> পেছনে টাইমলাইন ডিজাইন</label>
+      <label>নিজের ব্যাকগ্রাউন্ড ছবি (ঐচ্ছিক)<input type="file" accept="image/*" id="bgFile"></label>
+      <button type="button" id="bgClear" class="small" hidden>✕ ব্যাকগ্রাউন্ড সরাও</button>
+    </details>
+
+    <details class="card-sec" id="secBrand"><summary>লোগো আর নিচের স্ট্রিপ</summary>
+      <div class="two">
+        <label>লোগো<select id="logoStyle">
+          <option value="stacked">দুই লাইন</option><option value="wide">এক লাইন</option><option value="icon">গোল ব্যাজ</option><option value="off">লোগো নেই</option></select></label>
+        <label>কোথায়<select id="logoPos">
+          <option value="auto">অটো (ফাঁকা কোণে)</option><option value="tl">উপরে বামে</option><option value="tr">উপরে ডানে</option><option value="bl">নিচে বামে</option><option value="br">নিচে ডানে</option></select></label>
+      </div>
+      <label>লোগোর রং<select id="logoColor"></select></label>
+      <div class="two" id="logoCustom" hidden>
+        <label>মূল রং<input type="color" id="logoA"></label>
+        <label>দ্বিতীয় রং<input type="color" id="logoB"></label>
+      </div>
+      <label>নিচের স্ট্রিপ<select id="foot">
+        <option value="brand">টাইমলাইন স্ট্রিপ (স্লোগান + পেজ)</option><option value="sponsor">বিজ্ঞাপন / স্পনসর ব্যানার</option><option value="off">কিছু না</option></select></label>
+      <div id="footBrand">
+        <label>স্লোগান (*তারা* দিলে সোনালি)<input id="slogan"></label>
+        <label>পেজের ঠিকানা<input id="handle"></label>
+      </div>
+      <div id="footSponsor" hidden>
+        <label>ব্যানারের ছবি (চওড়া ছবি, অটো বসবে)<input type="file" accept="image/*" id="sponsorFile"></label>
+      </div>
+    </details>
+
+    <details class="card-sec" id="secParts"><summary>পোস্টারে কী কী থাকবে</summary>
+      <div id="parts" class="parts"></div>
+      <button type="button" id="resetAll" class="small">সব আগের জায়গায় ফেরাও</button>
+    </details>
+
+    <details class="card-sec" id="secCaption"><summary>ক্যাপশন</summary>
+      <textarea id="caption" rows="5"></textarea>
+      <button type="button" id="copyCap" class="small">ক্যাপশন কপি</button>
+    </details>
+  </aside>
+
+  <main class="stage" id="stage">
+    <div class="frame" id="frame"><div id="poster"></div></div>
+    <div class="act-bar">
+      <button type="button" id="download" class="primary">⬇ ডাউনলোড (HD PNG)</button>
+      <button type="button" id="share">↗ শেয়ার</button>
+    </div>
+  </main>
+</div>
+
+<script src="lib/html-to-image.js"></script>
+<script src="lib/bg-removal.js"></script>
+<script src="version.js"></script>
+<script src="js/colors.js"></script>
+<script src="js/library.js"></script>
+<script src="js/brand.js"></script>
+<script src="js/core.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/studio-edit.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
