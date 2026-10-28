@@ -28,7 +28,7 @@
     'টাইমলাইন স্ট্রিপ (স্লোগান + পেজ)': 'Timeline strip (slogan + page)', 'বিজ্ঞাপন / স্পনসর ব্যানার': 'Ad / sponsor banner', 'কিছু না': 'Nothing',
     'স্লোগান (*তারা* দিলে সোনালি)': 'Slogan (*stars* = gold)', 'পেজের ঠিকানা': 'Page address', 'ব্যানারের ছবি (চওড়া ছবি, অটো বসবে)': 'Banner picture (wide, fits by itself)',
     'পোস্টারে কী কী থাকবে': 'What is on the poster', 'সব আগের জায়গায় ফেরাও': 'Put everything back', 'ক্যাপশন': 'Caption', 'ক্যাপশন কপি': 'Copy caption',
-    '⬇ ডাউনলোড (HD PNG)': '⬇ Download (HD PNG)', '📲 অ্যাপ ইনস্টল': '📲 Install app', '📲 অ্যাপ হিসেবে ইনস্টল': '📲 Install as an app', 'ঠিক আছে': 'OK', '↗ শেয়ার': '↗ Share', 'ভাষা': 'Language', 'পোস্টারের ভাষা': 'Poster language',
+    '⬇ ডাউনলোড': '⬇ Download', '↺ রিসেট': '↺ Reset', 'সব বদল মুছে শুরুর অবস্থায় ফেরাও': 'Undo every change and start fresh', '📲 অ্যাপ ইনস্টল': '📲 Install app', '📲 অ্যাপ হিসেবে ইনস্টল': '📲 Install as an app', 'ঠিক আছে': 'OK', '↗ শেয়ার': '↗ Share', 'ভাষা': 'Language', 'পোস্টারের ভাষা': 'Poster language',
     // ---- sizes, themes, fonts, logo colours ----
     'পোস্ট ৪:৫ (1080×1350)': 'Post 4:5 (1080×1350)', 'স্কয়ার (1080×1080)': 'Square (1080×1080)', 'স্টোরি / রিলস (1080×1920)': 'Story / Reels (1080×1920)',
     'নিয়ন রাত (নতুন)': 'Neon night', 'সানসেট': 'Sunset', 'ওশান ব্লু': 'Ocean blue', 'ব্রডকাস্ট লাল': 'Broadcast red', 'সাদা মডার্ন': 'Clean white', 'মিন্ট ফ্রেশ': 'Mint',

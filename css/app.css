@@ -91,13 +91,13 @@ button:disabled { opacity: .5; }
 
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
-  .stage { order: -1; position: sticky; top: 0; z-index: 10; padding: 10px; justify-content: flex-start; }
+  .stage { order: -1; position: sticky; top: 0; z-index: 10; padding: 8px; gap: 8px; justify-content: flex-start; }
   .form { border-right: 0; padding: 16px; overflow: visible; }
   .card-grid { grid-template-columns: repeat(4, 1fr); }
   .cards .card-grid button { font-size: 11px; }
   .act-bar { gap: 8px; }
-  .act-bar button { padding: 10px 8px; font-size: 14px; white-space: nowrap; }
-  .act-bar .primary { flex: 1.4; }
+  .act-bar { gap: 6px; }
+  .act-bar button { padding: 7px 12px; font-size: 13px; white-space: nowrap; border-radius: 20px; }
   .se-bar { position: static !important; margin: 0 -16px 8px !important; padding: 6px 16px 0 !important; }
   .brand { flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; }
   .brand-logo { width: 190px; flex: 0 1 auto; min-width: 0; }

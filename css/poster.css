@@ -115,6 +115,7 @@
 .scorebar .tn.r { text-align: right; justify-content: flex-end; }
 .scorebar .sc { flex: none; max-width: 470px; overflow: hidden; display: flex; align-items: center; gap: .13em; font-size: 104px; }
 .scorebar .sc b { font-family: var(--hf); font-weight: 800; font-size: 1em; line-height: 1; min-width: .8em; text-align: center; white-space: nowrap; }
+.scorebar .sc b small { font-size: .45em; margin-left: .05em; }
 .scorebar .sc span { font-size: .21em; background: var(--acc); color: var(--acc-ink, #111); padding: .28em .65em .18em; border-radius: 30px; white-space: nowrap; }
 .goals { display: grid; grid-template-columns: 1fr 50px 1fr; gap: 10px; font-size: 26px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
 .goals > div:last-child { text-align: right; }

@@ -10,6 +10,8 @@
 (function () {
   const ST = window.ST;
   const box = (x, y, w, h) => `left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(w)}px;height:${Math.round(h)}px`;
+  // a score written with the shoot-out in brackets, 1(4), shows the bracket part smaller
+  const pen = s => s.replace(/\(([^()]*)\)/, '<small>($1)</small>');
   const tags = (p, P) => p.tags.map(t => `<span class="tg">${P(ST.tagText[t])}</span>`).join('');
 
   // one list of players, numbered or with a small dot
@@ -151,8 +153,8 @@
         const by = CB - 330;
         return ph(0, 0, 0, 1080, CB) + `<div class="shade-b" style="${box(0, CB * 0.4, 1080, CB * 0.6)}"></div>`
           + sec('comp', `<div class="comp-pill" style="left:0;width:1080px;top:${by - 90}px"><span>${P(d.comp)}</span>${d.stage ? `<small>${P(d.stage)}</small>` : ''}</div>`)
-          + sec('board', `<div class="scorebar" style="top:${by}px">${crest(1, 0, 0, 120).replace('ph ', 'ph inl ')}<div class="tn l" data-fit data-min=".5">${P(d.t1)}</div>
-              <div class="sc" data-fit="w" data-min=".4"><b>${P(d.s1)}</b><span>${P(d.status)}</span><b>${P(d.s2)}</b></div><div class="tn r" data-fit data-min=".5">${P(d.t2)}</div>${crest(2, 0, 0, 120).replace('ph ', 'ph inl ')}</div>`)
+          + sec('board', `<div class="scorebar" style="top:${by}px">${crest(1, 0, 0, 120).replace('ph ', 'ph inl ')}<div class="tn l" data-fit data-min=".5"><span>${P(d.t1)}</span></div>
+              <div class="sc" data-fit="w" data-min=".4"><b>${pen(P(d.s1))}</b><span>${P(d.status)}</span><b>${pen(P(d.s2))}</b></div><div class="tn r" data-fit data-min=".5"><span>${P(d.t2)}</span></div>${crest(2, 0, 0, 120).replace('ph ', 'ph inl ')}</div>`)
           + scorers(by + 170, 110) + sec('note', `<div class="note on-photo" style="left:0;width:1080px;top:${CB - 50}px">${P(d.note)}</div>`, !!d.note);
       },
     },

@@ -212,7 +212,7 @@
       // would make scrollHeight report an overflow at any size
       const kid = el.children.length === 1 && el.firstElementChild.tagName === 'SPAN' ? el.firstElementChild : null;
       // right-aligned rows spill to the left, which scrollWidth never reports: check where the text really starts
-      const spillLeft = () => { const L = el.getBoundingClientRect().left - 1; return [...el.querySelectorAll('li > span')].some(c => c.getBoundingClientRect().left < L); };
+      const spillLeft = () => { const L = el.getBoundingClientRect().left - 1; return [...el.querySelectorAll('li > span, :scope > span')].some(c => c.getBoundingClientRect().left < L); };
       const over = () => (!wOnly && (kid ? kid.offsetHeight : el.scrollHeight) > el.clientHeight + 2) || el.scrollWidth > el.clientWidth + 2 || spillLeft();
       if (!over()) return;
       let lo = min, hi = start;
@@ -258,11 +258,11 @@
   let mobH = 0, mobW = 0;
   function fitFrame() {
     const mob = innerWidth <= 760, bar = $('.act-bar').offsetHeight + 16;
-    // on phones the poster stays pinned above the form, so keep it to ~40% of the screen; the height is taken once per
+    // on phones the poster stays pinned above the form, so keep it to about half the screen; the height is taken once per
     // width so the browser's address bar showing and hiding while scrolling does not make the poster jump
     if (mob && innerWidth !== mobW) { mobW = innerWidth; mobH = innerHeight; }
-    const maxH = mob ? mobH * 0.4 : innerHeight - 40 - bar;
-    const s = Math.max(0.15, Math.min((stage.clientWidth - (mob ? 20 : 48)) / 1080, maxH / H()));
+    const maxH = mob ? mobH * 0.52 : innerHeight - 40 - bar;
+    const s = Math.max(0.15, Math.min((stage.clientWidth - (mob ? 16 : 48)) / 1080, maxH / H()));
     frame.style.width = Math.floor(1080 * s) + 'px'; frame.style.height = Math.floor(H() * s) + 'px';
     poster.style.transform = `scale(${s})`;
   }
@@ -475,6 +475,14 @@
     if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], text: $('#caption').value });
     else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); say('এই ব্রাউজারে সরাসরি শেয়ার হয় না, ছবিটা ডাউনলোড হয়েছে।'); }
   }));
+
+  // hard reset: every text, layout, move, theme and photo back to the start; the panel language and the photo library stay
+  $('#reset').addEventListener('click', () => {
+    if (!confirm(ST.tr('সব লেখা, ছবি, ডিজাইন আর রং মুছে শুরুর অবস্থায় ফিরবে। নিশ্চিত? ~ Every text, photo, layout and colour goes back to the start. Sure?'))) return;
+    clearTimeout(saveT);
+    try { localStorage.setItem(KEY, JSON.stringify({ ui: state.ui, lang: state.ui })); } catch (e) { /* blocked */ }
+    location.reload();
+  });
 
   // ---------------------------------------------------------------- language
   // panel text written in index.html is translated in place; the original Bangla is kept to switch back
