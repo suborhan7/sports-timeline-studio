@@ -255,9 +255,13 @@
 
   // ---------------------------------------------------------------- preview size
   const frame = $('#frame'), stage = $('#stage');
+  let mobH = 0, mobW = 0;
   function fitFrame() {
     const mob = innerWidth <= 760, bar = $('.act-bar').offsetHeight + 16;
-    const maxH = mob ? innerHeight * 0.5 : innerHeight - 40 - bar;
+    // on phones the poster stays pinned above the form, so keep it to ~40% of the screen; the height is taken once per
+    // width so the browser's address bar showing and hiding while scrolling does not make the poster jump
+    if (mob && innerWidth !== mobW) { mobW = innerWidth; mobH = innerHeight; }
+    const maxH = mob ? mobH * 0.4 : innerHeight - 40 - bar;
     const s = Math.max(0.15, Math.min((stage.clientWidth - (mob ? 20 : 48)) / 1080, maxH / H()));
     frame.style.width = Math.floor(1080 * s) + 'px'; frame.style.height = Math.floor(H() * s) + 'px';
     poster.style.transform = `scale(${s})`;

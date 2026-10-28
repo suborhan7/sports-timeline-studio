@@ -102,7 +102,7 @@ button:disabled { opacity: .5; }
   .brand { flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; }
   .brand-logo { width: 190px; flex: 0 1 auto; min-width: 0; }
   .form, .card-sec, .card-grid button { min-width: 0; }
-  .app { width: 100%; overflow-x: hidden; }
+  .app { width: 100%; overflow-x: clip; }  /* clip, not hidden: hidden would stop the poster from staying pinned */
 }
 
 /* install as an app */
