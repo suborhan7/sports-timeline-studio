@@ -425,11 +425,15 @@
     },
   });
   editing = true;
-  $('#resetAll').addEventListener('click', () => {
+  // ↺ next to Share and the button under the parts list: this poster's parts and photos go back to where they started
+  // (text and pictures stay); Ctrl+Z / ↶ brings the moves back
+  const resetPoster = () => {
     delete state.moves[moveKey()]; delete state.hidden[moveKey()];
     pics().forEach((p, i) => { const t = p && live(i); if (t) Object.assign(t, { dx: 0, dy: 0, zoom: 1 }); });
     render();
-  });
+  };
+  $('#resetAll').addEventListener('click', resetPoster);
+  $('#reset').addEventListener('click', resetPoster);
 
   // ---------------------------------------------------------------- caption
   function caption() {
@@ -475,14 +479,6 @@
     if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], text: $('#caption').value });
     else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); say('এই ব্রাউজারে সরাসরি শেয়ার হয় না, ছবিটা ডাউনলোড হয়েছে।'); }
   }));
-
-  // hard reset: every text, layout, move, theme and photo back to the start; the panel language and the photo library stay
-  $('#reset').addEventListener('click', () => {
-    if (!confirm(ST.tr('সব লেখা, ছবি, ডিজাইন আর রং মুছে শুরুর অবস্থায় ফিরবে। নিশ্চিত? ~ Every text, photo, layout and colour goes back to the start. Sure?'))) return;
-    clearTimeout(saveT);
-    try { localStorage.setItem(KEY, JSON.stringify({ ui: state.ui, lang: state.ui })); } catch (e) { /* blocked */ }
-    location.reload();
-  });
 
   // ---------------------------------------------------------------- language
   // panel text written in index.html is translated in place; the original Bangla is kept to switch back

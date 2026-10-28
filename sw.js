@@ -5,7 +5,7 @@
 //  - the studio's own files (html, js, css) are fetched fresh when the network answers within 3 s, otherwise the saved
 //    copy is used, so slow mobile data never holds the app up.
 const STATIC = "st-static-1", APP = "st-app";
-const VERSION = "v8";   // bump with version.js so phones pick up the new service worker
+const VERSION = "v9";   // bump with version.js so phones pick up the new service worker
 const APP_FILES = ["./", "index.html", "manifest.webmanifest", "version.js", "css/app.css", "css/poster.css", "fonts/fonts.css",
   "js/colors.js", "js/library.js", "js/brand.js", "js/core.js", "js/flags.js", "js/cards.js", "js/cards2.js", "js/i18n.js", "js/studio-edit.js", "js/app.js"];
 const isStatic = (u) => /\/(fonts\/.*\.woff2|lib\/|flags\/|icons\/)/.test(u);
