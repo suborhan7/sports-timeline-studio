@@ -11,12 +11,14 @@
   // ---------------------------------------------------------------- state
   const fresh = () => ({
     card: 'news', size: 'portrait', theme: 'neo', pair: 'sporty', hf: 'Anek Bangla', bf: 'Hind Siliguri', hscale: 100,
-    bn: true, pattern: true, logoStyle: 'stacked', logoPos: 'auto', logoColor: 'auto', logoA: '#ffffff', logoB: '#e0a030',
+    bn: true, pattern: true, logoStyle: 'stacked', logoPos: 'auto', logoColor: 'white', logoA: '#ffffff', logoB: '#e0a030',
     foot: 'brand', slogan: 'সব খেলার গল্প, *একটাই টাইমলাইনে*', handle: 'fb.com/sportstimelinebd',
     ui: 'bn', lang: 'bn', group: '', data: {}, dataEn: {}, layouts: {}, moves: {}, hidden: {},
   });
   let state = fresh();
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* first visit or private mode */ }
+  // the page asked for an all-white logo by default (2026-10-28): move older saved settings over once
+  if (!state.v3) { if (state.logoColor === 'auto') state.logoColor = 'white'; state.v3 = true; }
   // the example text and what the admin typed, kept apart for Bangla and English posters
   for (const c of ST.CARDS) {
     state.data[c.id] = Object.assign({}, c.data, state.data[c.id] || {});
@@ -46,16 +48,18 @@
   const slotMode = (c, i, L) => { const s = c.photos[i]; return (s.modes && s.modes[L]) || (s.side && L === 'side' ? s.side : s.mode); };
   // the picture to draw for a slot: the cut-out when the slot wants a cut-out and one is ready
   function shown(p, mode) {
-    if (mode === 'cut' && p.cut) return p.cut;
+    if ((mode === 'cut' || p.wantCut) && p.cut) return p.cut;
     return p;
   }
   const busy = new Set();
-  async function ensureCut(p) {
-    if (p.alpha || p.cut || p.noCut || busy.has(p) || !$('#autoCut').checked) return;
+  // force: the admin pressed "remove background" on this photo, so the auto switch does not matter
+  async function ensureCut(p, force) {
+    if (p.alpha || p.cut || p.noCut || busy.has(p) || (!force && !$('#autoCut').checked)) return;
     busy.add(p);
     try {
       const src = await ST.cutOut(p.src, say), a = await ST.analyse(src);
       p.cut = { src, w: a.w, h: a.h, dx: 0, dy: 0, zoom: 1 };
+      buildPhotos();
       // the admin's nudges belong to the picture they see
       render();
     } catch (e) { console.warn('cut-out failed', e); p.noCut = true; say(tr('অটো কাট-আউট হয়নি (ইন্টারনেট লাগবে)। সাধারণ ছবি বসানো হলো। ~ Cut-out failed (needs internet). The plain photo is used.')); }
@@ -102,6 +106,14 @@
 
   // ---------------------------------------------------------------- poster
   const box = (x, y, w, h) => `left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(w)}px;height:${Math.round(h)}px`;
+  // a crest slot with no picture shows the country's flag when the team name is a country (বাংলাদেশ, India…)
+  const flagKeys = Object.keys(window.ST_FLAGS || {}).sort((a, b) => b.length - a.length);
+  function flagOf(name) {
+    const n = String(name || '').trim().toLowerCase(); if (!n) return '';
+    if (ST_FLAGS[n]) return ST_FLAGS[n];
+    const k = flagKeys.find(k => k.length > 3 && n.startsWith(k)); return k ? ST_FLAGS[k] : '';
+  }
+  const teamName = (s, d) => s.flag ? d[s.flag] : s.team === 1 ? (d.t1 ?? d.team ?? d.winner) : s.team === 2 ? (d.t2 ?? d.opp ?? d.loser) : '';
   const faceCache = {};
   function face(name) {
     if (!name) return '';
@@ -119,10 +131,12 @@
   }
 
   let auto = { corner: null, color: null, key: '' };   // what the logo probe decided for this look
-  const LOGO_W = { stacked: 190, wide: 320, icon: 124 };
+  const LOGO_W = { stacked: 190, wide: 330, icon: 130 };
+  // logo height from its drawing's proportions
+  const logoH = (style, w) => { const v = ST_BRAND[style].match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number); return w * v[3] / v[2]; };
   function logoHtml(c, L, CB) {
     if (state.logoStyle === 'off') return '';
-    const w = LOGO_W[state.logoStyle], svgH = state.logoStyle === 'icon' ? w : state.logoStyle === 'wide' ? w * 0.28 : w * 0.72, m = 44;
+    const w = LOGO_W[state.logoStyle], svgH = logoH(state.logoStyle, w), m = 44;
     const corners = (c.logo && c.logo[L]) || ['tr'];
     const corner = state.logoPos !== 'auto' ? state.logoPos : (auto.key === lookKey() && auto.corner) || corners[0];
     const x = corner[1] === 'l' ? m : 1080 - m - w, y = corner[0] === 't' ? m - 6 : CB - m - svgH;
@@ -139,10 +153,10 @@
     const fh = footH(); if (!fh) return '';
     const y = H() - fh;
     if (state.foot === 'sponsor') return `<div class="mv" data-move="foot"><div class="st-foot sponsor" style="top:${y}px;height:${fh}px">${media.sponsor ? `<img src="${media.sponsor}">` : '<div class="ph-hint" data-slot="sponsor">বিজ্ঞাপনের ব্যানার দিন</div>'}</div></div>`;
-    // the strip logo is white with the theme accent
-    return `<div class="mv" data-move="foot"><div class="st-foot" style="top:${y}px;height:${fh}px"><div class="slogan">${ST.rich(state.slogan, false)}</div>
-      <div class="handle">${ST.esc(state.handle)}</div><div class="follow">${ST.t('ফলো করুন', 'Follow')} ➜</div>
-      <div class="flogo" style="--logo-a:var(--pink);--logo-b:var(--acc)">${ST_BRAND.stacked}</div></div></div>`;
+    // three fixed columns, so nothing can push into anything else on any screen: slogan | follow + page | logo
+    return `<div class="mv" data-move="foot"><div class="st-foot" style="top:${y}px;height:${fh}px"><div class="slogan" data-fit data-min=".5"><span>${ST.rich(state.slogan, false)}</span></div>
+      <div class="fcta"><div class="follow">${ST.t('ফলো করুন', 'Follow')} ➜</div>${state.handle ? `<div class="handle">${ST.esc(state.handle)}</div>` : ''}</div>
+      <div class="flogo" style="--logo-a:#fff;--logo-b:#fff">${ST_BRAND.stacked}</div></div></div>`;
   }
 
   const poster = $('#poster');
@@ -154,6 +168,8 @@
       const p = pics()[i], s = c.photos[i];
       if (!s) return '';
       const shape = cls.includes('crest') ? 'crest' : '';
+      const fl = !p && mode === 'logo' && flagOf(teamName(s, D()[c.id]));
+      if (fl) return `<div class="ph logo flag ${shape} ${cls}" style="${box(x, y, w, h)}"><img class="flag-img" data-slot="${i}" src="flags/${fl}.svg" alt=""></div>`;
       if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(tr(s.label).replace(/\s*\(.*\)/, ''))}</div></div>`;
       const q = shown(p, mode);
       return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}"><img data-p="${i}" src="${q.src}" style="${ST.place(q, w, h, mode === 'cut' && q === p && !p.alpha ? 'scene' : mode)}"></div>`;
@@ -220,7 +236,7 @@
         filter: n => !(n.classList && (n.classList.contains('st-logo') || n.classList.contains('ph-hint'))) });
       if (k !== lookKey()) return;
       const g = cv.getContext('2d', { willReadFrequently: true }), c = card(), L = layout(), CB = H() - footH();
-      const w = LOGO_W[state.logoStyle], h = state.logoStyle === 'icon' ? w : state.logoStyle === 'wide' ? w * 0.28 : w * 0.72, m = 44;
+      const w = LOGO_W[state.logoStyle], h = logoH(state.logoStyle, w), m = 44;
       let best = null;
       for (const corner of (c.logo && c.logo[L]) || ['tr']) {
         const x = corner[1] === 'l' ? m : 1080 - m - w, y = corner[0] === 't' ? m : CB - m - h;
@@ -288,6 +304,7 @@
       return `<div class="slot"><div class="thumb">${p ? `<img src="${(p.cut || p).src}">` : '📷'}</div><div class="slot-body"><b>${tr(s.label)}</b>
         <div class="slot-row"><label class="file">${tr(p ? 'বদলাও ~ Change' : 'ছবি দিন ~ Add photo')}<input type="file" accept="image/*" data-slot-file="${i}"></label>
         ${p ? `<button type="button" class="small" data-slot-clear="${i}">✕ ${tr('সরাও ~ Remove')}</button>` : ''}
+        ${p && !p.alpha && slotMode(c, i, layout()) !== 'cut' ? `<button type="button" class="small ${p.wantCut ? 'on' : ''}" data-slot-cut="${i}">✂ ${tr(p.wantCut ? 'ব্যাকগ্রাউন্ড ফেরাও ~ Bring background back' : 'ব্যাকগ্রাউন্ড সরাও ~ Remove background')}</button>` : ''}
         ${p && s.name && D()[c.id][s.name] && BPG.lib.ok() ? `<button type="button" class="small" data-slot-save="${i}" title="${tr('এই নামে পরেরবার নিজে থেকেই বসবে ~ Next time this name brings the photo by itself')}">${tr('লাইব্রেরিতে রাখো ~ Save to library')}</button>` : ''}</div></div></div>`;
     }).join('');
   }
@@ -296,7 +313,8 @@
     await setPhoto(state.card, +i, await ST.readFile(e.target.files[0]));
   });
   $('#photos').addEventListener('click', async e => {
-    const c = e.target.dataset.slotClear, s = e.target.dataset.slotSave;
+    const c = e.target.dataset.slotClear, s = e.target.dataset.slotSave, k = e.target.dataset.slotCut;
+    if (k != null) { const p = pics()[+k]; p.wantCut = !p.wantCut; if (p.wantCut) ensureCut(p, true); render(); buildPhotos(); return; }
     if (c != null) { pics()[+c] = undefined; libTried[state.card + c] = D()[state.card][card().photos[+c].name]; render(); buildPhotos(); }
     if (s != null) {
       const p = pics()[+s], name = D()[state.card][card().photos[+s].name];
@@ -480,6 +498,23 @@
   $('#uiSwitch').addEventListener('click', e => { const b = e.target.closest('[data-ui]'); if (!b || b.dataset.ui === state.ui) return; setUi(b.dataset.ui); setLang(b.dataset.ui); });
   $('#lang').value = state.lang;
   $('#lang').addEventListener('change', e => setLang(e.target.value));
+
+  // ---------------------------------------------------------------- install as an app
+  // Android / desktop Chrome and Edge offer their own install prompt; iPhone Safari and others need the menu steps
+  let installEvt = null;
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  $('#install').hidden = standalone();
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#install').hidden = false; });
+  addEventListener('appinstalled', () => { $('#install').hidden = true; installEvt = null; say(tr('অ্যাপ ইনস্টল হয়েছে ✓ হোম স্ক্রিন থেকে খুলুন। ~ Installed ✓ Open it from your home screen.')); });
+  $('#install').addEventListener('click', async () => {
+    if (installEvt) { installEvt.prompt(); await installEvt.userChoice.catch(() => {}); installEvt = null; return; }
+    $('#installHelp').innerHTML = ios
+      ? tr('Safari তে নিচের <b>শেয়ার ⬆</b> বাটন চাপুন, তারপর <b>Add to Home Screen</b>। ~ In Safari tap <b>Share ⬆</b>, then <b>Add to Home Screen</b>.')
+      : tr('ব্রাউজারের <b>⋮ মেনু</b> খুলে <b>Install app</b> বা <b>Add to Home screen</b> চাপুন। (Chrome দিয়ে খুললে সবচেয়ে ভালো।) ~ Open the browser <b>⋮ menu</b> and tap <b>Install app</b> or <b>Add to Home screen</b>. (Chrome works best.)');
+    $('#installBox').hidden = false;
+  });
+  $('#installBox').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target.id === 'installBox') $('#installBox').hidden = true; });
 
   // ---------------------------------------------------------------- start
   $('#brandLogo').innerHTML = ST_BRAND.wide;

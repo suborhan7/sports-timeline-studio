@@ -92,9 +92,10 @@
         const kv = rows.map(([l, v]) => `<li><small>${l}</small><b>${P(v)}</b></li>`).join('');
         const line = o.line(d, P, t), icon = o.badge || '';
         if (L === 'photo') {
+          const py = Math.min(CB * 0.6, CB - 480);
           return ph(0, 0, 0, 1080, CB) + `<div class="shade-b" style="${box(0, CB * 0.25, 1080, CB * 0.75)}"></div>` + sec('info', top(infoBar(d.info, P)))
-            + sec('word', `<div class="mega-word on-photo" data-fit="w" data-min=".3" style="${box(40, CB * 0.4, 1000, CB * 0.2)}">${icon}${P(d.word)}</div>`)
-            + sec('player', `<div class="pcol on-photo center" style="${box(60, CB * 0.6, 960, CB * 0.4 - 250)}"><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="bigsc mid">${line}</div></div>`)
+            + sec('word', `<div class="mega-word on-photo" data-fit="w" data-min=".3" style="${box(40, py - CB * 0.2, 1000, CB * 0.2)}">${icon}${P(d.word)}</div>`)
+            + sec('player', `<div class="pcol on-photo center" style="${box(60, py, 960, CB - py - 250)}"><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="bigsc mid">${line}</div></div>`)
             + sec('rows', `<ul class="kv row" style="${box(50, CB - 230, 980, 170)}">${kv}</ul>`, !!kv);
         }
         return sec('word', `<div class="mega-word" data-fit="w" data-min=".3" style="${box(40, 170, 1000, CB * 0.2)}">${icon}${P(d.word)}</div>`)
@@ -128,7 +129,7 @@
         const vs = [d.team, d.opp].filter(has).map(x => P(x)).join(` <em>${t('বনাম', 'vs')}</em> `);
         const strip = (y) => sec('balls', `<div class="overbox" style="${box(50, y, 980, 300)}"><div class="ov-h"><span>${ovl}</span><b>${total}</b></div><div class="ov-balls">${balls}</div></div>`);
         if (L === 'photo') {
-          const pb = CB * 0.46;
+          const pb = Math.min(CB * 0.46, CB - 620);
           return ph(0, 0, 0, 1080, pb, 'fade-b') + sec('info', top(infoBar(d.info, P)))
             + sec('player', `<div class="pcol" style="${box(60, pb - 60, 960, CB - pb - 340)}"><div class="mword" data-fit="w" data-min=".4">${P(d.word)}</div><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="vsl">${vs}</div></div>`)
             + strip(CB - 340);
@@ -371,7 +372,7 @@
         const { L, CB, T, P, sec, ph, t } = c, v = Math.min(10, num(d.rating));
         const gauge = s => `<div class="gauge ${v >= 8 ? 'hi' : v < 6 ? 'lo' : ''}" style="width:${s}px;height:${s}px;--v:${v * 10}"><div style="font-size:${Math.round(s * 0.24)}px"><b>${P(d.rating)}</b><small>/${P(10)}</small></div></div>`;
         const vs = [d.team, d.opp].filter(has).map(x => P(x)).join(` <em>${t('বনাম', 'vs')}</em> `);
-        const chips = chipsOf(pairs(d.stats).map(([l, x]) => [x, P(l)]), P);
+        const chips = chipsOf(pairs(d.stats).map(([l, x]) => [x, P(l)]), P), gs = CB < 1100 ? 280 : 380;
         if (L === 'card') {
           const pb = CB * 0.5;
           return ph(0, 0, 0, 1080, pb, 'fade-b') + sec('info', top(infoBar(d.info, P)))
@@ -380,8 +381,8 @@
             + sec('stats', `<div class="chips" style="${box(50, CB - 230, 980, 170)}">${chips}</div>`, !!chips);
         }
         return ph(0, 0, 170, 600, CB - 170, 'cut-glow') + sec('info', top(infoBar(d.info, P)))
-          + sec('gauge', `<div style="left:620px;top:190px">${gauge(380)}</div>`)
-          + sec('player', `<div class="pcol right" style="${box(560, 600, 460, CB - 600 - 260)}"><div class="xi-k big">${t('প্লেয়ার রেটিং', 'PLAYER RATING')}</div><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="vsl">${vs}</div></div>`)
+          + sec('gauge', `<div style="left:${1020 - gs}px;top:190px">${gauge(gs)}</div>`)
+          + sec('player', `<div class="pcol right" style="${box(560, 210 + gs, 460, CB - 210 - gs - 250)}"><div class="xi-k big">${t('প্লেয়ার রেটিং', 'PLAYER RATING')}</div><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="vsl">${vs}</div></div>`)
           + sec('stats', `<div class="chips" style="${box(50, CB - 230, 980, 170)}">${chips}</div>`, !!chips);
       },
     },
@@ -529,7 +530,7 @@
       render(d, c) {
         const { L, CB, T, P, sec, ph, t } = c;
         const rows = ST.rows(d.rows).map(r => { const low = /↓/.test(r[0]), a = num(r[1]), b = num(r[2]); return { l: r[0].replace('↓', '').trim(), a: r[1] || '', b: r[2] || '', w: a === b ? 0 : (a > b) !== low ? 1 : 2, pa: a + b ? a / (a + b) : 0.5 }; });
-        const phH = CB * 0.36, y1 = 170;
+        const phH = CB * (CB < 1100 ? 0.27 : 0.36), y1 = 170;
         const tops = ph(0, 0, y1, 540, phH, 'cut-glow') + ph(1, 540, y1, 540, phH, 'cut-glow')
           + sec('title', `<div class="cmp-title" style="${box(60, 70, 760, 90)}"><span>${P(d.title)}</span></div>`)
           + sec('names', `<div class="cmp-names" style="${box(40, y1 + phH - 40, 1000, 140)}"><div><b>${P(d.p1)}</b><small>${P(d.sub1)}</small></div><i>${t('বনাম', 'VS')}</i><div><b>${P(d.p2)}</b><small>${P(d.sub2)}</small></div></div>`);

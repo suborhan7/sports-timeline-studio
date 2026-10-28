@@ -143,7 +143,7 @@
         if (L === 'split') {
           const pb = CB * 0.58;
           return ph(0, 0, 0, 1080, pb + 80, 'diag')
-            + sec('status', `<div class="mega-status" style="left:0;width:1080px;top:${pb - 70}px">${P(d.status)}</div>`)
+            + sec('status', `<div class="mega-status" data-fit="w" data-min=".45" style="left:60px;width:960px;white-space:nowrap;top:${pb - 70}px">${P(d.status)}</div>`)
             + sec('board', `<div class="row-score" style="top:${pb + 110}px">${crest(1, 0, 0, 170).replace('ph ', 'ph inl ')}<b>${P(d.s1)}</b><i></i><b>${P(d.s2)}</b>${crest(2, 0, 0, 170).replace('ph ', 'ph inl ')}</div>`)
             + sec('names', `<div class="row-names" style="top:${pb + 300}px"><span>${P(d.t1)}</span><small>${P(d.comp)}${d.stage ? ' · ' + P(d.stage) : ''}</small><span>${P(d.t2)}</span></div>`)
             + scorers(pb + 360, CB - pb - 420) + sec('note', `<div class="note" style="left:0;width:1080px;top:${CB - 56}px">${P(d.note)}</div>`, !!d.note);
@@ -151,8 +151,8 @@
         const by = CB - 330;
         return ph(0, 0, 0, 1080, CB) + `<div class="shade-b" style="${box(0, CB * 0.4, 1080, CB * 0.6)}"></div>`
           + sec('comp', `<div class="comp-pill" style="left:0;width:1080px;top:${by - 90}px"><span>${P(d.comp)}</span>${d.stage ? `<small>${P(d.stage)}</small>` : ''}</div>`)
-          + sec('board', `<div class="scorebar" style="top:${by}px">${crest(1, 0, 0, 120).replace('ph ', 'ph inl ')}<div class="tn l">${P(d.t1)}</div>
-              <div class="sc"><b>${P(d.s1)}</b><span>${P(d.status)}</span><b>${P(d.s2)}</b></div><div class="tn r">${P(d.t2)}</div>${crest(2, 0, 0, 120).replace('ph ', 'ph inl ')}</div>`)
+          + sec('board', `<div class="scorebar" style="top:${by}px">${crest(1, 0, 0, 120).replace('ph ', 'ph inl ')}<div class="tn l" data-fit data-min=".5">${P(d.t1)}</div>
+              <div class="sc" data-fit="w" data-min=".4"><b>${P(d.s1)}</b><span>${P(d.status)}</span><b>${P(d.s2)}</b></div><div class="tn r" data-fit data-min=".5">${P(d.t2)}</div>${crest(2, 0, 0, 120).replace('ph ', 'ph inl ')}</div>`)
           + scorers(by + 170, 110) + sec('note', `<div class="note on-photo" style="left:0;width:1080px;top:${CB - 50}px">${P(d.note)}</div>`, !!d.note);
       },
     },
@@ -171,7 +171,7 @@
         p1: 'জো রুট | 151 (128)\nহ্যারি ব্রুক | 98 (71)\nআদিল রশিদ | 2/64', p2: 'পাথুম নিসাঙ্কা | 132 (110)\nকুশল মেন্ডিস | 102* (88)\nহাসারাঙ্গা | 2/71' },
       render(d, c) {
         const { L, CB, P, sec, ph } = c;
-        const side = (i) => `<div class="ck-team ${d.win == i ? 'won' : ''}"><small>${P(d['t' + i])}</small><b>${P(d['r' + i])}</b><span>${P(d['o' + i])}</span></div>`;
+        const side = (i) => `<div class="ck-team ${d.win == i ? 'won' : ''}"><small>${P(d['t' + i])}</small><b data-fit="w" data-min=".4">${P(d['r' + i])}</b><span>${P(d['o' + i])}</span></div>`;
         if (L === 'card') {
           const top = c.has(0) ? CB * 0.3 : 0, perf = s => ST.rows(s).map(r => `<li><span>${P(r[0])}</span><b>${P(r[1] || '')}</b></li>`).join('');
           const blk = (i, y, h) => `<div class="ck-block ${d.win == i ? 'won' : ''}" style="${box(60, y, 960, h)}">${ph(i, 30, 26, 110, 110, 'crest')}
@@ -260,7 +260,7 @@
       logo: { columns: ['tl', 'tr'], hero: ['tr'] },
       fields: [['title', 'শিরোনাম', 'text'], ['sub', 'নিচের লাইন', 'text'],
         ['groups', 'খেলোয়াড় (প্রতি লাইনে একটি পজিশন: "গোলকিপার: নাম, নাম")', 'area', 8]],
-      photos: [{ label: 'খেলোয়াড়ের ছবি (ঐচ্ছিক, অটো কাটা)', mode: 'cut' }, { label: 'দলের লোগো', mode: 'logo', team: 1 }],
+      photos: [{ label: 'খেলোয়াড়ের ছবি (ঐচ্ছিক, অটো কাটা)', mode: 'cut' }, { label: 'দলের লোগো', mode: 'logo', team: 1, flag: 'title' }],
       data: { title: 'আর্জেন্টিনা স্কোয়াড', sub: 'ফিফা বিশ্বকাপ ২০২৬',
         groups: 'গোলকিপার: এমিলিয়ানো মার্তিনেজ, হুয়ান মুসো, গেরোনিমো রুলি\nডিফেন্ডার: নাহুয়েল মোলিনা, ক্রিস্তিয়ান রোমেরো, নিকোলাস ওতামেন্দি, লিসান্দ্রো মার্তিনেজ, নিকোলাস তাগলিয়াফিকো, গনজালো মন্তিয়েল, লিওনার্দো বালের্দি, মার্কোস আকুনিয়া\nমিডফিল্ডার: রদ্রিগো দি পল, এনজো ফার্নান্দেজ, অ্যালেক্সিস ম্যাক অ্যালিস্টার, লিয়ান্দ্রো পারেদেস, জিওভানি লো চেলসো, এজেকিয়েল পালাসিওস, থিয়াগো আলমাদা\nফরোয়ার্ড: লিওনেল মেসি, হুলিয়ান আলভারেজ, লাউতারো মার্তিনেজ, নিকোলাস গনসালেস, আলেহান্দ্রো গার্নাচো' },
       render(d, c) {
@@ -314,9 +314,10 @@
       render(d, c) {
         const { L, CB, T, P, sec, ph } = c, rows = ST.rows(d.rows);
         if (L === 'rank') {
-          return (c.has(0) ? ph(0, 600, 200, 480, CB * 0.42 - 60, 'cut-glow') : '')
-            + sec('title', `<div class="st-title" style="${box(70, 150, 600, 250)}"><div class="xi-team multi" data-fit data-min=".4">${T(d.title)}</div><div class="xi-sub">${P(d.sub)}</div></div>`)
-            + sec('rows', `<ol class="rank" data-fit style="${box(60, Math.max(430, CB * 0.42), 960, CB - Math.max(430, CB * 0.42) - 50)}">${rows.map((r, i) => `<li><i>${P(i + 1)}</i><span>${P(r[1] || '')}<small>${P(r[2] || '')}</small></span><b>${P(r[0])}</b></li>`).join('')}</ol>`);
+          const ry = CB < 1100 ? 380 : Math.max(430, CB * 0.42);
+          return (c.has(0) ? ph(0, 600, 200, 480, ry - 260, 'cut-glow') : '')
+            + sec('title', `<div class="st-title" style="${box(70, 150, 600, ry - 180)}"><div class="xi-team multi" data-fit data-min=".4">${T(d.title)}</div><div class="xi-sub">${P(d.sub)}</div></div>`)
+            + sec('rows', `<ol class="rank" data-fit style="${box(60, ry, 960, CB - ry - 50)}">${rows.map((r, i) => `<li><i>${P(i + 1)}</i><span>${P(r[1] || '')}<small>${P(r[2] || '')}</small></span><b>${P(r[0])}</b></li>`).join('')}</ol>`);
         }
         return ph(0, 480, 160, 600, CB - 160, 'cut-glow')
           + sec('title', `<div class="st-title" style="${box(70, 130, 560, 260)}"><div class="xi-team multi" data-fit data-min=".4">${T(d.title)}</div><div class="xi-sub">${P(d.sub)}</div></div>`)

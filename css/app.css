@@ -94,8 +94,19 @@ button:disabled { opacity: .5; }
   .form { border-right: 0; padding: 16px; overflow: visible; }
   .card-grid { grid-template-columns: repeat(4, 1fr); }
   .cards .card-grid button { font-size: 11px; }
-  .se-bar { position: static !important; }
+  .act-bar { gap: 8px; }
+  .act-bar button { padding: 10px 8px; font-size: 14px; white-space: nowrap; }
+  .act-bar .primary { flex: 1.4; }
+  .se-bar { position: static !important; margin: 0 -16px 8px !important; padding: 6px 16px 0 !important; }
   .brand-logo { width: 170px; }
   .form, .card-sec, .card-grid button { min-width: 0; }
   .app { width: 100%; overflow-x: hidden; }
 }
+
+/* install as an app */
+.install-box { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.6); }
+.install-box[hidden] { display: none; }
+.install-card { max-width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.install-card b { color: var(--gold); font-size: 18px; }
+.install-card p { line-height: 1.6; }
+.slot-row button.on { border-color: var(--gold); color: var(--gold); }

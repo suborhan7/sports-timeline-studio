@@ -30,7 +30,8 @@ The switch at the top turns the studio panel and the poster to English (labels, 
 ## Things that happen on their own
 
 - **Photos find their place.** *সব ছবি একসাথে দিন* (or drop / paste pictures on the poster) looks at each picture: a crest goes to a logo slot, a player to the cut-out slot, a match photo to the photo slot.
-- **Background removal** for player photos (AI in the browser; needs internet the first time to download the model).
+- **Background removal** for player photos (AI in the browser; needs internet the first time to download the model). Any other photo has its own *✂ ব্যাকগ্রাউন্ড সরাও* button.
+- **Country flags**: type a national team's name (Bangla or English, e.g. আর্জেন্টিনা / Argentina) and its flag fills the empty logo slot. Club crests still need an upload. Flags are flag-icons (MIT), in `flags/`, names in `js/flags.js`.
 - **Crests** on a plain white/black background get that background removed, and their colour feeds the *দলের রং* theme.
 - **News photos are cropped around the people** (detail + skin tone focus) and never cut off the top of a head.
 - **Text always fits**: long headlines and lists shrink to their box. `*word*` colours a word.
@@ -48,11 +49,15 @@ Bangla fonts (all served from `fonts/`, OFL): Hind Siliguri, Anek Bangla, Tiro B
 
 ## Logo
 
-The redesigned logo is vector (`brand/logo-stacked.svg`, `logo-wide.svg`, `logo-icon.svg`) with a timeline track under the wordmark. Its colours are CSS variables, so the studio can show it in brand colours, white, white + gold, green, black, gold or any custom pair. `brand/logo-colours.png` shows the options. To rebuild it: `pip install uharfbuzz fonttools brotli`, then `python3 tools/genlogo.py && python3 tools/genlogo.py --js`.
+The logo is the page's original lettering, traced to vector from `brand/original-logo.png` (`brand/logo-stacked.svg`, `logo-wide.svg`, `logo-icon.svg`). It is all white by default; its colours are CSS variables, so the studio can also show it in brand colours, white + gold, green, black, gold or any custom pair. To rebuild it: `pip install potracer pillow numpy`, then `python3 tools/tracelogo.py`.
 
 ## Footer strip
 
-Every poster can end with the page strip (slogan, page address, ফলো করুন, logo), a sponsor/ad banner image, or nothing.
+Every poster can end with the page strip (slogan on the left, ফলো করুন with the page address, white logo on the right; the slogan shrinks to fit so nothing overlaps), a sponsor/ad banner image, or nothing.
+
+## Install as an app
+
+The studio is a PWA. Press *📲 অ্যাপ ইনস্টল* under the poster (Chrome / Android installs it directly); on iPhone use Share → Add to Home Screen. After an update, close and reopen the app once to get the new version.
 
 ## Turn on GitHub Pages (one time)
 
