@@ -98,7 +98,7 @@ button:disabled { opacity: .5; }
   .act-bar { gap: 8px; }
   .act-bar { gap: 6px; }
   .act-bar button { padding: 7px 12px; font-size: 13px; white-space: nowrap; border-radius: 20px; }
-  .se-bar { position: static !important; margin: 0 -16px 8px !important; padding: 6px 16px 0 !important; }
+  .se-bar { position: sticky !important; top: var(--stage-h, 0px) !important; z-index: 9 !important; margin: 0 -16px 8px !important; padding: 6px 16px 0 !important; }
   .brand { flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; }
   .brand-logo { width: 190px; flex: 0 1 auto; min-width: 0; }
   .form, .card-sec, .card-grid button { min-width: 0; }

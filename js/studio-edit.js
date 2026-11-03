@@ -158,11 +158,14 @@
         <button type="button" data-se="left" title="←">←</button><button type="button" data-se="up" title="↑">↑</button><button type="button" data-se="down" title="↓">↓</button><button type="button" data-se="right" title="→">→</button>
         <button type="button" data-se="center" title="${tr('মাঝে আনো ~ Centre')}">⊕</button><button type="button" data-se="resetone" title="${tr('এটা আগের মতো ~ Reset this')}">↺</button>
         <button type="button" data-se="hide" class="se-hide" title="${tr('সরাও ~ Remove')} (Del)">✕</button></div>
-      <p class="tip" hidden>${tr('ক্লিক = বাছাই। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন। ~ Click = pick. Drag or use the arrow keys to move (Shift = 10px), mouse wheel or − / + to size, Delete removes, Ctrl+Z undoes, Esc lets go.')}</p>`;
+      <div class="se-row se-tools se-text" hidden>
+        <span class="se-lbl">${tr('লেখা ~ Text')}</span><button type="button" data-se="fsmaller" title="${tr('লেখা ছোট ~ Smaller text')}">অ−</button><span class="se-fpct">100%</span><button type="button" data-se="fbigger" title="${tr('লেখা বড় ~ Bigger text')}">অ+</button>
+        <button type="button" data-se="al" data-al="l" title="${tr('বামে ~ Left')}">⇤</button><button type="button" data-se="al" data-al="c" title="${tr('মাঝে ~ Centre')}">≡</button><button type="button" data-se="al" data-al="r" title="${tr('ডানে ~ Right')}">⇥</button></div>
+      <p class="tip" hidden>${tr('ক্লিক = বাছাই। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, অ− / অ+ দিয়ে শুধু লেখা ছোট-বড়, ⇤ ≡ ⇥ দিয়ে লেখা বামে / মাঝে / ডানে, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন। ~ Click = pick. Drag or use the arrow keys to move (Shift = 10px), mouse wheel or − / + to size, অ− / অ+ for the text size only, ⇤ ≡ ⇥ to line the text up left / centre / right, Delete removes, Ctrl+Z undoes, Esc lets go.')}</p>`;
     el.addEventListener('click', e => {
       const b = e.target.closest('[data-se]'); if (!b) return;
       if (b.dataset.se === 'help') { const t = $('.tip', el); t.hidden = !t.hidden; return; }
-      act(b.dataset.se);
+      act(b.dataset.se, b.dataset.al);
     });
     return el;
   }
@@ -171,6 +174,12 @@
     $('[data-se="undo"]', b).disabled = !undoStack.length; $('[data-se="redo"]', b).disabled = !redoStack.length;
     $$('.se-tools', b).forEach(r => r.hidden = !sel);
     $('.se-name', b).textContent = sel ? tr('বাছাই ~ Picked') + ': ' + label(sel.kind === 'photo' ? 'p' + sel.i : sel.key) : tr(NONE);
+    if (sel && sel.kind === 'photo') $('.se-text', b).hidden = true;
+    if (sel && sel.kind !== 'photo') {
+      const m = movesOf()[sel.key] || {};
+      $('.se-fpct', b).textContent = Math.round((m.f || 1) * 100) + '%';
+      $$('[data-al]', b).forEach(x => x.classList.toggle('on', x.dataset.al === m.a));
+    }
     if (sel) $('.se-pct', b).textContent = Math.round((sel.kind === 'photo' ? o.photo.get(sel.i).zoom : (movesOf()[sel.key] || {}).s || 1) * 100) + '%';
   }
   function select(s) { sel = s; overlay(); refreshBar(); }
@@ -205,12 +214,19 @@
       nudge(left, 0);
     }
   }
-  function act(a) {
+  function act(a, al) {
     if (a === 'undo') return undo();
     if (a === 'redo') return redo();
     if (!sel) return;
     const step = 1;
-    if (a === 'smaller') resize(0.95); else if (a === 'bigger') resize(1.05);
+    if ((a === 'fsmaller' || a === 'fbigger' || a === 'al') && sel.kind !== 'photo') {
+      const m = secOf(sel.key);
+      if (a === 'al') m.a = m.a === al ? undefined : al;
+      else m.f = Math.min(2.5, Math.max(0.4, +((m.f || 1) * (a === 'fbigger' ? 1.08 : 1 / 1.08)).toFixed(3)));
+      if (m.f && Math.abs(m.f - 1) < 0.01) delete m.f;
+      if (!m.a) delete m.a;
+      o.render();
+    } else if (a === 'smaller') resize(0.95); else if (a === 'bigger') resize(1.05);
     else if (a === 'left') nudge(-step * 5, 0); else if (a === 'right') nudge(step * 5, 0);
     else if (a === 'up') nudge(0, -step * 5); else if (a === 'down') nudge(0, step * 5);
     else if (a === 'center') centre();
@@ -224,7 +240,7 @@
 
   // ---- undo / redo ----
   // entries made just by looking a part up (empty, or not moved / sized) are not a change: they never become an undo step
-  const idle = m => m && typeof m === 'object' && !m.x && !m.y && (!m.s || m.s === 1) && Object.keys(m).every(k => ['x', 'y', 's', 'ox', 'oy'].includes(k));
+  const idle = m => m && typeof m === 'object' && !m.x && !m.y && (!m.s || m.s === 1) && !m.f && !m.a && Object.keys(m).every(k => ['x', 'y', 's', 'ox', 'oy'].includes(k));
   const prune = (v, drop) => {
     const out = {};
     for (const [l, parts] of Object.entries(v || {})) {
@@ -265,6 +281,24 @@
   function afterRender() {
     const hid = hiddenOf();
     $$('[data-move]', o.poster).forEach(el => { const k = el.dataset.move; el.style.cssText = styleOf(k) + (hid[k] ? ';display:none' : ''); });
+    // text size and alignment chosen for a part: every letter inside grows or shrinks from the size it has now (after
+    // the automatic fitting), and the text lines up left / centre / right
+    $$('[data-move]', o.poster).forEach(el => {
+      const m = movesOf()[el.dataset.move] || {};
+      if (m.a) el.dataset.align = m.a; else delete el.dataset.align;
+      if (!m.f || m.f === 1) return;
+      const all = $$('*', el), size = all.map(c => parseFloat(getComputedStyle(c).fontSize));
+      all.forEach((c, i) => { c.style.fontSize = size[i] * m.f + 'px'; });
+      // a box that fits its text (data-fit) grows only as far as the box allows, so nothing gets clipped
+      if (m.f > 1) all.forEach((c, i) => {
+        if (!c.hasAttribute('data-fit')) return;
+        const over = () => c.scrollWidth > c.clientWidth + 2 || (c.dataset.fit !== 'w' && c.scrollHeight > c.clientHeight + 2);
+        if (!over()) return;
+        let lo = size[i], hi = size[i] * m.f;
+        for (let k = 0; k < 7; k++) { const mid = (lo + hi) / 2; c.style.fontSize = mid + 'px'; if (over()) hi = mid; else lo = mid; }
+        c.style.fontSize = lo + 'px';
+      });
+    });
     $$('[data-p]', o.poster).forEach(el => { if (hid['p' + el.dataset.p]) ((o.photo && o.photo.box && o.photo.box(el)) || el.closest('.slot') || el).style.display = 'none'; });
     if (sel && !rectOf(sel)) sel = null;
     parts(); overlay(); refreshBar();
@@ -280,7 +314,8 @@
       .se-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:6px}.se-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.se-bar .tip{font-size:12px;margin:0 0 8px;opacity:.85}.se-row[hidden]{display:none}
       .se-row button{padding:3px 7px;min-width:30px}.se-row button:disabled{opacity:.4;cursor:default}
       .se-name{font-size:12px;color:#19e28a;margin-left:4px}.se-pct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}
-      .se-hide{color:#ff8a9a}
+      .se-hide{color:#ff8a9a}.se-lbl{font-size:12px;opacity:.75;margin-right:2px}.se-fpct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}.se-row button.on{border-color:#19e28a;color:#19e28a}
+      .mv[data-align=l] *{text-align:left!important}.mv[data-align=c] *{text-align:center!important}.mv[data-align=r] *{text-align:right!important}
       .mv{position:absolute;inset:0;pointer-events:none}.mv>*{pointer-events:auto;cursor:move}`;
     document.head.appendChild(css);
     o.panel.insertBefore(bar(), o.panel.querySelector('h2') ? o.panel.querySelector('h2').nextSibling : o.panel.firstChild);

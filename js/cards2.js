@@ -52,7 +52,7 @@
         const stamp = duck ? sec('duck', `<div class="stamp" style="left:600px;top:${Math.round(CB * 0.42)}px">${t('ডাক!', 'DUCK!')}</div>`) : '';
         const stats = (y, hh) => sec('stats', `<div class="chips" style="${box(50, y, 980, hh)}">${chips}</div>`, !!chips);
         if (L === 'photo') {
-          const y0 = CB * 0.5;
+          const y0 = Math.min(CB * 0.5, CB - 560);
           return ph(0, 0, 0, 1080, CB) + `<div class="shade-b" style="${box(0, CB * 0.28, 1080, CB * 0.72)}"></div>` + sec('info', head)
             + sec('player', `<div class="pcol on-photo" style="${box(60, y0, 570, CB - y0 - 290)}"><div class="mword" data-fit="w" data-min=".4">${P(d.word)}</div>
                 <div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div><div class="vsl">${vs}</div></div>`)
@@ -150,7 +150,7 @@
       data: o.data, dataEn: o.dataEn,
       render(d, c) {
         const { L, CB, T, P, sec, ph, t } = c, b = o.make(d, t, P);
-        const rows = b.rows.map((r, i) => `<div class="trow ${r.lead ? 'lead' : ''}">${ph(i + 1, 0, 0, 110, 110, 'crest inl')}<span class="tn">${P(r.t)}</span><b>${P(r.s)}</b>${has(r.o) ? `<small>${P(r.o)}</small>` : ''}</div>`).join('');
+        const rows = b.rows.map((r, i) => `<div class="trow ${r.lead ? 'lead' : ''}">${ph(i + 1, 0, 0, 110, 110, 'crest inl')}<span class="tn">${P(r.t)}</span><b data-fit="w" data-min=".45">${P(r.s)}</b>${has(r.o) ? `<small>${P(r.o)}</small>` : ''}</div>`).join('');
         const inner = `<div class="sb-status">${P(b.status)}</div>${rows}${b.strip ? `<div class="sb-strip">${b.strip}</div>` : ''}${b.chips ? `<div class="chips sm">${b.chips}</div>` : ''}`;
         const hgt = 130 + b.rows.length * 170 + (b.strip ? 110 : 0) + (b.chips ? 150 : 0);
         if (L === 'center') {

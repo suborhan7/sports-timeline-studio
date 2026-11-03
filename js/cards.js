@@ -104,11 +104,13 @@
         const who = `<div class="q-name">${P(d.name)}</div><div class="q-role">${P(d.role)}</div>`;
         if (L === 'side') {
           return ph(0, 470, 150, 610, CB - 150, 'cut-glow', 'cut')
-            + sec('quote', `<div class="q-panel" style="${box(60, 190, 560, CB - 300)}"><div class="qmark">${QM}</div><div class="q-text" data-fit>${T(d.quote)}</div><div class="q-who">${who}</div></div>`);
+            + sec('quote', `<div class="q-panel" style="${box(60, 190, 560, CB - 300)}"><div class="qmark">${QM}</div><div class="q-text" data-fit>${T(d.quote)}</div><div class="q-room"></div></div>`)
+            + sec('who', `<div class="q-who q-on-pan" style="${box(106, CB - 260, 470, 140)}">${who}</div>`);
         }
         if (L === 'full') {
           return ph(0, 0, 0, 1080, CB) + `<div class="shade-l" style="${box(0, 0, 1080, CB)}"></div>`
-            + sec('quote', `<div class="q-free on-photo" style="${box(70, CB * 0.3, 620, CB * 0.62)}"><div class="qmark">${QM}</div><div class="q-text" data-fit>${T(d.quote)}</div><div class="q-who">${who}</div></div>`);
+            + sec('quote', `<div class="q-free on-photo" style="${box(70, CB * 0.3, 620, CB * 0.62 - 160)}"><div class="qmark">${QM}</div><div class="q-text" data-fit>${T(d.quote)}</div></div>`)
+            + sec('who', `<div class="q-who q-free on-photo" style="${box(70, CB * 0.92 - 140, 620, 140)}">${who}</div>`);
         }
         const phH = CB * 0.42, pb = 210 + phH;
         return `<div class="frame-back" style="${box(44, 194, 992, phH + 32)}"></div>` + ph(0, 60, 210, 960, phH, 'rounded')
@@ -123,7 +125,7 @@
       id: 'score', name: 'ফুটবল স্কোর', icon: '⚽',
       layouts: { bar: 'স্কোরবার (ছবির নিচে)', boxes: 'বড় সংখ্যা (বক্স)', split: 'ফুল-টাইম (তির্যক)' },
       logo: { bar: ['tr', 'tl'], boxes: ['tr', 'tl'], split: ['tr', 'tl'] },
-      fields: [['comp', 'টুর্নামেন্ট', 'text'], ['stage', 'পর্ব (ঐচ্ছিক)', 'text'], ['status', 'অবস্থা', 'text'],
+      fields: [['comp', 'টুর্নামেন্টের নাম', 'text'], ['stage', 'পর্ব: গ্রুপ পর্ব / কোয়ার্টার ফাইনাল… (ঐচ্ছিক)', 'text'], ['status', 'অবস্থা', 'text'],
         ['t1', 'দল ১', 'text'], ['s1', 'গোল (দল ১)', 'text'], ['t2', 'দল ২', 'text'], ['s2', 'গোল (দল ২)', 'text'],
         ['g1', 'গোলদাতা (দল ১, কমা দিয়ে)', 'area', 2], ['g2', 'গোলদাতা (দল ২)', 'area', 2], ['note', 'নিচের লাইন (অ্যাগ্রিগেট / টাইব্রেকার)', 'text']],
       photos: [{ label: 'ম্যাচের ছবি', mode: 'scene' }, { label: 'দল ১ এর লোগো', mode: 'logo', team: 1 }, { label: 'দল ২ এর লোগো', mode: 'logo', team: 2 }],
@@ -131,7 +133,7 @@
       render(d, c) {
         const { L, CB, P, sec, ph } = c;
         const crest = (i, x, y, s) => ph(i, x, y, s, s, 'crest');
-        const scorers = (y, h) => sec('goals', `<div class="goals" style="${box(70, y, 940, h)}"><div>${P(d.g1).replace(/,\s*/g, '<br>')}</div><i>⚽</i><div>${P(d.g2).replace(/,\s*/g, '<br>')}</div></div>`, !!(d.g1 || d.g2));
+        const scorers = (y, h) => sec('goals', `<div class="goals" data-fit data-min=".6" style="${box(70, y, 940, h)}"><div>${P(d.g1).replace(/,\s*/g, '<br>')}</div><i>⚽</i><div>${P(d.g2).replace(/,\s*/g, '<br>')}</div></div>`, !!(d.g1 || d.g2));
         if (L === 'boxes') {
           const y = CB * 0.36;
           return (c.has(0) ? ph(0, 0, 0, 1080, CB, 'dim') : '')
@@ -143,7 +145,7 @@
             + scorers(CB - 220, 150) + sec('note', `<div class="note" style="left:0;width:1080px;top:${CB - 60}px">${P(d.note)}</div>`, !!d.note);
         }
         if (L === 'split') {
-          const pb = CB * 0.58;
+          const pb = Math.min(CB * 0.58, CB - 540);
           return ph(0, 0, 0, 1080, pb + 80, 'diag')
             + sec('status', `<div class="mega-status" data-fit="w" data-min=".45" style="left:60px;width:960px;white-space:nowrap;top:${pb - 70}px">${P(d.status)}</div>`)
             + sec('board', `<div class="row-score" style="top:${pb + 110}px">${crest(1, 0, 0, 170).replace('ph ', 'ph inl ')}<b>${P(d.s1)}</b><i></i><b>${P(d.s2)}</b>${crest(2, 0, 0, 170).replace('ph ', 'ph inl ')}</div>`)
@@ -155,7 +157,7 @@
           + sec('comp', `<div class="comp-pill" style="left:0;width:1080px;top:${by - 90}px"><span>${P(d.comp)}</span>${d.stage ? `<small>${P(d.stage)}</small>` : ''}</div>`)
           + sec('board', `<div class="scorebar" style="top:${by}px">${crest(1, 0, 0, 120).replace('ph ', 'ph inl ')}<div class="tn l" data-fit data-min=".5"><span>${P(d.t1)}</span></div>
               <div class="sc" data-fit="w" data-min=".4"><b>${pen(P(d.s1))}</b><span>${P(d.status)}</span><b>${pen(P(d.s2))}</b></div><div class="tn r" data-fit data-min=".5"><span>${P(d.t2)}</span></div>${crest(2, 0, 0, 120).replace('ph ', 'ph inl ')}</div>`)
-          + scorers(by + 170, 110) + sec('note', `<div class="note on-photo" style="left:0;width:1080px;top:${CB - 50}px">${P(d.note)}</div>`, !!d.note);
+          + scorers(by + 170, 150) + sec('note', `<div class="note on-photo" style="left:0;width:1080px;top:${CB - 50}px">${P(d.note)}</div>`, !!d.note);
       },
     },
 

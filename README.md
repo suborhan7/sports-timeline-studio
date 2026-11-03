@@ -31,7 +31,7 @@ The switch at the top turns the studio panel and the poster to English (labels, 
 
 - **Photos find their place.** *সব ছবি একসাথে দিন* (or drop / paste pictures on the poster) looks at each picture: a crest goes to a logo slot, a player to the cut-out slot, a match photo to the photo slot.
 - **Background removal** for player photos (AI in the browser; needs internet the first time to download the model). Any other photo has its own *✂ ব্যাকগ্রাউন্ড সরাও* button.
-- **Country flags**: type a national team's name (Bangla or English, e.g. আর্জেন্টিনা / Argentina) and its flag fills the empty logo slot. Club crests still need an upload. Flags are flag-icons (MIT), in `flags/`, names in `js/flags.js`.
+- **Country flags**: type a national team's name (Bangla or English, e.g. আর্জেন্টিনা / Argentina) and its flag fills the empty logo slot. Club crests still need an upload. Every country has a flag (flag-icons, MIT, in `flags/`); names in Bangla and English are in `js/flags.js`, and a name with a suffix such as অনূর্ধ্ব ১৫ still matches.
 - **Crests** on a plain white/black background get that background removed, and their colour feeds the *দলের রং* theme.
 - **News photos are cropped around the people** (detail + skin tone focus) and never cut off the top of a head.
 - **Text always fits**: long headlines and lists shrink to their box. `*word*` colours a word.
@@ -39,7 +39,7 @@ The switch at the top turns the studio panel and the poster to English (labels, 
 - **Logo corner and colour**: the logo goes to the calmest allowed corner and turns green on a light spot, white/gold on a busy photo.
 - **Photo library**: save a player's photo once (*লাইব্রেরিতে রাখো*); next time his name is typed, the photo appears. Names on the football pitch card show faces from the library too.
 
-Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
+Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. A picked text part also gets **অ− / অ+** (text size only) and **⇤ ≡ ⇥** (left / centre / right). A photo moved or zoomed out inside its frame gets a soft blurred fill instead of an empty strip. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
 
 ## Themes and fonts
 

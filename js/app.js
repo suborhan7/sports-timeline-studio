@@ -171,8 +171,10 @@
       const fl = !p && mode === 'logo' && flagOf(teamName(s, D()[c.id]));
       if (fl) return `<div class="ph logo flag ${shape} ${cls}" style="${box(x, y, w, h)}"><img class="flag-img" data-slot="${i}" src="flags/${fl}.svg" alt=""></div>`;
       if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(tr(s.label).replace(/\s*\(.*\)/, ''))}</div></div>`;
-      const q = shown(p, mode);
-      return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}"><img data-p="${i}" src="${q.src}" style="${ST.place(q, w, h, mode === 'cut' && q === p && !p.alpha ? 'scene' : mode)}"></div>`;
+      const q = shown(p, mode), as = mode === 'cut' && q === p && !p.alpha ? 'scene' : mode;
+      // a photo moved or zoomed out inside its frame: a soft blurred copy fills the frame, so there is never an empty strip
+      const fill = as === 'scene' && (q.dx || q.dy || (q.zoom || 1) < 1) ? `<img class="ph-fill" src="${q.src}" alt="">` : '';
+      return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}">${fill}<img data-p="${i}" src="${q.src}" style="${ST.place(q, w, h, as)}"></div>`;
     };
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
     const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, t: ST.t };
@@ -265,6 +267,8 @@
     const s = Math.max(0.15, Math.min((stage.clientWidth - (mob ? 16 : 48)) / 1080, maxH / H()));
     frame.style.width = Math.floor(1080 * s) + 'px'; frame.style.height = Math.floor(H() * s) + 'px';
     poster.style.transform = `scale(${s})`;
+    // phones: the editor bar sticks right under the pinned poster, so its buttons are in reach after tapping a part
+    document.documentElement.style.setProperty('--stage-h', (mob ? stage.offsetHeight : 0) + 'px');
   }
   addEventListener('resize', fitFrame);
 

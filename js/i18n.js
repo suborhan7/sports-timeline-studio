@@ -47,7 +47,7 @@
     'উক্তি (কোট)': 'Quote', 'ছবি উপরে': 'Photo on top', 'কাট-আউট পাশে': 'Cut-out beside', 'ফুল ছবি': 'Full photo', 'উক্তি (*তারা* দিলে রঙিন)': 'Quote (*stars* = colour)',
     'কে বলেছেন': 'Who said it', 'পরিচয় / কোথায় বলেছেন': 'Role / where it was said', 'যিনি বলেছেন তাঁর ছবি': 'Photo of the speaker',
     'ফুটবল স্কোর': 'Football score', 'স্কোরবার (ছবির নিচে)': 'Score bar (under the photo)', 'বড় সংখ্যা (বক্স)': 'Big numbers (boxes)', 'ফুল-টাইম (তির্যক)': 'Full-time (diagonal)',
-    'টুর্নামেন্ট': 'Competition', 'পর্ব (ঐচ্ছিক)': 'Stage (optional)', 'অবস্থা': 'Status', 'দল ১': 'Team 1', 'গোল (দল ১)': 'Goals (team 1)', 'দল ২': 'Team 2', 'গোল (দল ২)': 'Goals (team 2)',
+    'টুর্নামেন্ট': 'Competition', 'পর্ব (ঐচ্ছিক)': 'Stage (optional)', 'টুর্নামেন্টের নাম': 'Tournament', 'পর্ব: গ্রুপ পর্ব / কোয়ার্টার ফাইনাল… (ঐচ্ছিক)': 'Stage: group stage / quarter-final… (optional)', 'লেখা': 'Text', 'অবস্থা': 'Status', 'দল ১': 'Team 1', 'গোল (দল ১)': 'Goals (team 1)', 'দল ২': 'Team 2', 'গোল (দল ২)': 'Goals (team 2)',
     'গোলদাতা (দল ১, কমা দিয়ে)': 'Scorers (team 1, comma between)', 'গোলদাতা (দল ২)': 'Scorers (team 2)', 'নিচের লাইন (অ্যাগ্রিগেট / টাইব্রেকার)': 'Line under (aggregate / penalties)',
     'ম্যাচের ছবি': 'Match photo', 'দল ১ এর লোগো': 'Team 1 crest', 'দল ২ এর লোগো': 'Team 2 crest',
     'ক্রিকেট স্কোর': 'Cricket score', 'পুরো স্কোরকার্ড': 'Full scorecard', 'ম্যাচ / সিরিজ': 'Match / series', 'রান-উইকেট (দল ১)': 'Runs-wickets (team 1)', 'ওভার (দল ১)': 'Overs (team 1)',
