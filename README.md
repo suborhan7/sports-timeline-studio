@@ -39,7 +39,7 @@ The switch at the top turns the studio panel and the poster to English (labels, 
 - **Logo corner and colour**: the logo goes to the calmest allowed corner and turns green on a light spot, white/gold on a busy photo.
 - **Photo library**: save a player's photo once (*লাইব্রেরিতে রাখো*); next time his name is typed, the photo appears. Names on the football pitch card show faces from the library too.
 
-Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. A picked text part also gets **অ− / অ+** (text size only) and **⇤ ≡ ⇥** (left / centre / right). A photo moved or zoomed out inside its frame gets a soft blurred fill instead of an empty strip. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
+Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. Tap a picked part again to pick one piece inside it (a team name, a score, one line) and move or size just that; ⬚ goes back to the whole part. Size anything by dragging the green dot on the corner of the selection or by pinching with two fingers. A picked text part also gets **অ− / অ+** (text size only) and **⇤ ≡ ⇥** (left / centre / right). A photo moved or zoomed out inside its frame gets a soft blurred fill instead of an empty strip. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
 
 ## Themes and fonts
 
@@ -53,7 +53,7 @@ The logo is the page's original lettering, traced to vector from `brand/original
 
 ## Footer strip
 
-Every poster can end with the page strip (slogan on the left, ফলো করুন with the page address, white logo on the right; the slogan shrinks to fit so nothing overlaps), a sponsor/ad banner image, or nothing.
+Every poster can end with the page strip, a sponsor strip made in the studio (label + up to 4 logos, optionally above the page strip), a sponsor's own banner picture (shown in full), or nothing. Sponsor logos and banner are saved on the phone. Before: the page strip (slogan on the left, ফলো করুন with the page address, white logo on the right; the slogan shrinks to fit so nothing overlaps), a sponsor/ad banner image, or nothing.
 
 ## Install as an app
 

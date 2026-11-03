@@ -26,14 +26,40 @@
     const m = movesOf()[k] || {}, s = m.s || 1;
     return `transform:translate(${m.x || 0}px,${m.y || 0}px)${s !== 1 ? ` scale(${s})` : ''};transform-origin:${m.ox || 540}px ${m.oy || 675}px`;
   };
-  const label = k => tr((o.parts && o.parts[k]) || k);
   const secEl = k => $(`[data-move="${k}"]`, o.poster);
   const photoEl = i => $(`[data-p="${i}"]`, o.poster);
+  /* items: any single piece inside a part (a team name, a score, one stat box, a line of text). Its key is the part's key
+     plus the child positions down to it, "board/0/2", so it is found again after every render. */
+  const isItem = k => k.includes('/');
+  const itemEl = k => { const [s, ...path] = k.split('/'); let el = secEl(s); for (const i of path) { el = el && el.children[+i]; } return el || null; };
+  const itemKey = (el, mv) => { const path = []; for (let e = el; e && e !== mv; e = e.parentElement) path.unshift([...e.parentElement.children].indexOf(e)); return mv.dataset.move + '/' + path.join('/'); };
+  // the piece the finger is on: an SVG shape counts as its whole drawing, a coloured word as its line
+  function itemOf(t, mv) {
+    let el = t;
+    if (el instanceof SVGElement && el.ownerSVGElement) { let top = el.ownerSVGElement; while (top.ownerSVGElement) top = top.ownerSVGElement; el = top; }
+    while (el && el.parentElement !== mv && /^(EM|BR|STRONG|I)$/.test(el.tagName) && getComputedStyle(el).display === 'inline') el = el.parentElement;
+    if (!el || el === mv || el.parentElement === mv) return null;   // the part's own box: that is the whole part
+    return el;
+  }
+  const label = k => {
+    if (!isItem(k)) return tr((o.parts && o.parts[k]) || k);
+    const el = itemEl(k), txt = el ? el.textContent.trim().replace(/\s+/g, ' ') : '';
+    return label(k.split('/')[0]) + ' › ' + (txt ? (txt.length > 16 ? txt.slice(0, 15) + '…' : txt) : tr('ছবি / নকশা ~ picture / shape'));
+  };
+  // a moved / sized item: CSS translate + scale (they add to any transform the design already has)
+  function applyItem(k) {
+    const el = itemEl(k), m = movesOf()[k] || {}; if (!el) return;
+    el.style.translate = m.x || m.y ? `${m.x || 0}px ${m.y || 0}px` : '';
+    el.style.scale = m.s && m.s !== 1 ? String(m.s) : '';
+    // boxes that clip their text (long names, fitted scores) would cut a moved or enlarged piece off: let it show
+    if (m.x || m.y || (m.s && m.s !== 1) || (m.f && m.f > 1)) for (let p = el.parentElement; p && !p.matches('[data-move]'); p = p.parentElement) p.style.overflow = 'visible';
+  }
 
   // on-screen box of a section (union of its visible pieces) or a photo, in client px
   function rectOf(s) {
     if (!s) return null;
     if (s.kind === 'photo') { const el = photoEl(s.i); return el && el.getBoundingClientRect(); }
+    if (isItem(s.key)) { const el = itemEl(s.key); if (!el) return null; const q = el.getBoundingClientRect(); return q.width || q.height ? q : null; }
     const el = secEl(s.key); if (!el) return null;
     let l = 1e9, t = 1e9, r = -1e9, b = -1e9;
     $$('*', el).concat(el.children.length ? [] : [el]).forEach(c => {
@@ -133,6 +159,7 @@
   function overlay() {
     if (!box) {
       box = document.createElement('div'); box.className = 'se-box';
+      box.innerHTML = '<i class="se-handle" title="টেনে ছোট-বড়"></i>';
       guide = document.createElement('div'); guide.className = 'se-guide';
       o.frame.append(box, guide);
     }
@@ -156,12 +183,12 @@
       <div class="se-row se-tools" hidden>
         <button type="button" data-se="smaller" title="${tr('ছোট ~ Smaller')} (−)">−</button><span class="se-pct">100%</span><button type="button" data-se="bigger" title="${tr('বড় ~ Bigger')} (+)">+</button>
         <button type="button" data-se="left" title="←">←</button><button type="button" data-se="up" title="↑">↑</button><button type="button" data-se="down" title="↓">↓</button><button type="button" data-se="right" title="→">→</button>
-        <button type="button" data-se="center" title="${tr('মাঝে আনো ~ Centre')}">⊕</button><button type="button" data-se="resetone" title="${tr('এটা আগের মতো ~ Reset this')}">↺</button>
+        <button type="button" data-se="center" title="${tr('মাঝে আনো ~ Centre')}">⊕</button><button type="button" data-se="resetone" title="${tr('এটা আগের মতো ~ Reset this')}">↺</button><button type="button" data-se="parent" class="se-parent" title="${tr('পুরো অংশ বাছাই ~ Pick the whole part')}">⬚</button>
         <button type="button" data-se="hide" class="se-hide" title="${tr('সরাও ~ Remove')} (Del)">✕</button></div>
       <div class="se-row se-tools se-text" hidden>
         <span class="se-lbl">${tr('লেখা ~ Text')}</span><button type="button" data-se="fsmaller" title="${tr('লেখা ছোট ~ Smaller text')}">অ−</button><span class="se-fpct">100%</span><button type="button" data-se="fbigger" title="${tr('লেখা বড় ~ Bigger text')}">অ+</button>
         <button type="button" data-se="al" data-al="l" title="${tr('বামে ~ Left')}">⇤</button><button type="button" data-se="al" data-al="c" title="${tr('মাঝে ~ Centre')}">≡</button><button type="button" data-se="al" data-al="r" title="${tr('ডানে ~ Right')}">⇥</button></div>
-      <p class="tip" hidden>${tr('ক্লিক = বাছাই। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, অ− / অ+ দিয়ে শুধু লেখা ছোট-বড়, ⇤ ≡ ⇥ দিয়ে লেখা বামে / মাঝে / ডানে, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন। ~ Click = pick. Drag or use the arrow keys to move (Shift = 10px), mouse wheel or − / + to size, অ− / অ+ for the text size only, ⇤ ≡ ⇥ to line the text up left / centre / right, Delete removes, Ctrl+Z undoes, Esc lets go.')}</p>`;
+      <p class="tip" hidden>${tr('ক্লিক = পুরো অংশ বাছাই, আবার ক্লিক = তার ভেতরের একটা জিনিস (নাম, স্কোর, লেখা) আলাদা করে; ⬚ দিলে আবার পুরো অংশ। কোণের সবুজ বল টেনে বা দুই আঙুলে চিমটি দিয়ে ছোট-বড়। টেনে বা অ্যারো কি দিয়ে সরান (Shift = ১০px), মাউস হুইল বা − / + দিয়ে ছোট-বড়, অ− / অ+ দিয়ে শুধু লেখা ছোট-বড়, ⇤ ≡ ⇥ দিয়ে লেখা বামে / মাঝে / ডানে, Delete দিলে সরে যাবে, Ctrl+Z আগের মতো, Esc = ছেড়ে দিন। ~ Click = pick a part, click again = one piece inside it (a name, a score, a line); ⬚ goes back to the whole part. Drag the green dot on the corner or pinch with two fingers to size. Drag or use the arrow keys to move (Shift = 10px), mouse wheel or − / + to size, অ− / অ+ for the text size only, ⇤ ≡ ⇥ to line the text up left / centre / right, Delete removes, Ctrl+Z undoes, Esc lets go.')}</p>`;
     el.addEventListener('click', e => {
       const b = e.target.closest('[data-se]'); if (!b) return;
       if (b.dataset.se === 'help') { const t = $('.tip', el); t.hidden = !t.hidden; return; }
@@ -175,6 +202,7 @@
     $$('.se-tools', b).forEach(r => r.hidden = !sel);
     $('.se-name', b).textContent = sel ? tr('বাছাই ~ Picked') + ': ' + label(sel.kind === 'photo' ? 'p' + sel.i : sel.key) : tr(NONE);
     if (sel && sel.kind === 'photo') $('.se-text', b).hidden = true;
+    $('.se-parent', b).hidden = !(sel && sel.kind !== 'photo' && isItem(sel.key));
     if (sel && sel.kind !== 'photo') {
       const m = movesOf()[sel.key] || {};
       $('.se-fpct', b).textContent = Math.round((m.f || 1) * 100) + '%';
@@ -187,10 +215,20 @@
   // ---- actions on the selection ----
   function nudge(dx, dy) {
     if (sel.kind === 'photo') { const t = o.photo.get(sel.i); t.dx += dx; t.dy += dy; o.render(); o.photo.changed(sel.i); }
+    else if (isItem(sel.key)) { const m = secOf(sel.key); m.x += dx; m.y += dy; applyItem(sel.key); overlay(); }
     else { const m = secOf(sel.key); m.x += dx; m.y += dy; secEl(sel.key).style.cssText = styleOf(sel.key); overlay(); }
   }
+  // set the size outright (the corner handle and two-finger pinch)
+  function setSize(v) {
+    if (sel.kind === 'photo') { const t = o.photo.get(sel.i); t.zoom = Math.min(2.5, Math.max(0.4, +v.toFixed(3))); o.render(); o.photo.changed(sel.i); }
+    else if (isItem(sel.key)) { const m = secOf(sel.key); m.s = Math.min(4, Math.max(0.2, +v.toFixed(3))); applyItem(sel.key); overlay(); }
+    else { const m = originOf(sel.key); m.s = Math.min(3, Math.max(0.3, +v.toFixed(3))); secEl(sel.key).style.cssText = styleOf(sel.key); overlay(); }
+    refreshBar();
+  }
+  const sizeNow = () => sel.kind === 'photo' ? o.photo.get(sel.i).zoom || 1 : (movesOf()[sel.key] || {}).s || 1;
   function resize(f) {
     if (sel.kind === 'photo') { const t = o.photo.get(sel.i); t.zoom = Math.min(2.5, Math.max(0.4, +(t.zoom * f).toFixed(3))); o.render(); o.photo.changed(sel.i); }
+    else if (isItem(sel.key)) { const m = secOf(sel.key); m.s = Math.min(4, Math.max(0.2, +((m.s || 1) * f).toFixed(3))); applyItem(sel.key); overlay(); }
     else { const m = originOf(sel.key); m.s = Math.min(3, Math.max(0.3, +((m.s || 1) * f).toFixed(3))); secEl(sel.key).style.cssText = styleOf(sel.key); overlay(); }
     refreshBar();
   }
@@ -230,10 +268,12 @@
     else if (a === 'left') nudge(-step * 5, 0); else if (a === 'right') nudge(step * 5, 0);
     else if (a === 'up') nudge(0, -step * 5); else if (a === 'down') nudge(0, step * 5);
     else if (a === 'center') centre();
+    else if (a === 'parent') { select({ kind: 'sec', key: sel.key.split('/')[0] }); return; }
     else if (a === 'resetone') {
       if (sel.kind === 'photo') { Object.assign(o.photo.get(sel.i), { dx: 0, dy: 0, zoom: 1 }); o.photo.changed(sel.i); }
       else delete movesOf()[sel.key];
       o.render();
+    } else if (a === 'hide' && sel.kind !== 'photo' && isItem(sel.key)) { hiddenOf()[sel.key] = true; sel = null; o.render();
     } else if (a === 'hide') { hiddenOf()[sel.kind === 'photo' ? 'p' + sel.i : sel.key] = true; sel = null; o.render(); }
     commit();
   }
@@ -268,6 +308,7 @@
   function parts() {
     const hid = hiddenOf(), keys = $$('[data-move]', o.poster).map(e => e.dataset.move);
     $$('[data-p]', o.poster).forEach(e => { if (!keys.includes('p' + e.dataset.p)) keys.push('p' + e.dataset.p); });
+    Object.keys(hid).forEach(k => { if (isItem(k) && hid[k] && itemEl(k)) keys.push(k); });
     const known = Object.keys(o.parts || {}), order = known.filter(k => keys.includes(k)).concat(keys.filter(k => !known.includes(k)));
     const bx = o.partsBox;
     if (bx.dataset.keys !== order.join() || bx.dataset.layout !== o.moveKey()) {
@@ -300,6 +341,14 @@
       });
     });
     $$('[data-p]', o.poster).forEach(el => { if (hid['p' + el.dataset.p]) ((o.photo && o.photo.box && o.photo.box(el)) || el.closest('.slot') || el).style.display = 'none'; });
+    // single items: move / size, text size, alignment, hidden
+    Object.entries(movesOf()).forEach(([k, m]) => {
+      if (!isItem(k)) return; const el = itemEl(k); if (!el) return;
+      applyItem(k);
+      if (m.a) el.style.textAlign = { l: 'left', c: 'center', r: 'right' }[m.a];
+      if (m.f && m.f !== 1) { const all = [el, ...$$('*', el)], size = all.map(c => parseFloat(getComputedStyle(c).fontSize)); all.forEach((c, i) => { c.style.fontSize = size[i] * m.f + 'px'; }); }
+    });
+    Object.keys(hid).forEach(k => { if (isItem(k) && hid[k]) { const el = itemEl(k); if (el) el.style.visibility = 'hidden'; } });
     if (sel && !rectOf(sel)) sel = null;
     parts(); overlay(); refreshBar();
   }
@@ -314,7 +363,8 @@
       .se-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:6px}.se-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.se-bar .tip{font-size:12px;margin:0 0 8px;opacity:.85}.se-row[hidden]{display:none}
       .se-row button{padding:3px 7px;min-width:30px}.se-row button:disabled{opacity:.4;cursor:default}
       .se-name{font-size:12px;color:#19e28a;margin-left:4px}.se-pct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}
-      .se-hide{color:#ff8a9a}.se-lbl{font-size:12px;opacity:.75;margin-right:2px}.se-fpct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}.se-row button.on{border-color:#19e28a;color:#19e28a}
+      .se-hide{color:#ff8a9a}.se-handle{position:absolute;right:-13px;bottom:-13px;width:26px;height:26px;border-radius:50%;background:#19e28a;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:auto;cursor:nwse-resize;touch-action:none}
+      .se-handle::after{content:'';position:absolute;inset:-12px}.se-lbl{font-size:12px;opacity:.75;margin-right:2px}.se-fpct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}.se-row button.on{border-color:#19e28a;color:#19e28a}
       .mv[data-align=l] *{text-align:left!important}.mv[data-align=c] *{text-align:center!important}.mv[data-align=r] *{text-align:right!important}
       .mv{position:absolute;inset:0;pointer-events:none}.mv>*{pointer-events:auto;cursor:move}`;
     document.head.appendChild(css);
@@ -337,6 +387,37 @@
     };
     const base = e => ({ bubbles: true, cancelable: true, composed: true, clientX: e.clientX, clientY: e.clientY, screenX: e.screenX, screenY: e.screenY,
       button: e.button, buttons: e.buttons, shiftKey: e.shiftKey, altKey: e.altKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey });
+    /* resize by hand: drag the round handle on the corner of the selection box, or pinch with two fingers.
+       The new size is the old one times how much further from the middle of the picked thing the finger(s) are now. */
+    const touches = new Map();
+    let grow = null;
+    const midOf = () => { const q = rectOf(sel); return q && { x: (q.left + q.right) / 2, y: (q.top + q.bottom) / 2 }; };
+    const spread = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+    const stopOthers = () => { drag = null; if (o.cancelDrag) o.cancelDrag(); f.classList.remove('dragging'); };
+    let before = null, t0 = 0;
+    f.addEventListener('pointerdown', e => {
+      if (e.__se) return;
+      if (!touches.size) { before = sel; t0 = Date.now(); }
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (e.target.closest('.se-handle') && sel) {
+        const c = midOf(); if (!c) return;
+        grow = { c, d0: Math.max(8, Math.hypot(e.clientX - c.x, e.clientY - c.y)), s0: sizeNow(), id: e.pointerId };
+        f.setPointerCapture(e.pointerId); e.stopImmediatePropagation(); e.preventDefault(); return;
+      }
+      if (touches.size === 2 && (sel || before)) {
+        if (before && Date.now() - t0 < 500) select(before);
+        stopOthers(); grow = { pinch: true, d0: Math.max(8, spread()), s0: sizeNow() }; e.stopImmediatePropagation();
+      }
+    }, true);
+    f.addEventListener('pointermove', e => {
+      if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (!grow || !sel) return;
+      e.stopImmediatePropagation();
+      const d = grow.pinch ? (touches.size === 2 ? spread() : grow.d0) : Math.hypot(e.clientX - grow.c.x, e.clientY - grow.c.y);
+      setSize(grow.s0 * d / grow.d0);
+    }, true);
+    const lift = e => { touches.delete(e.pointerId); if (grow && (grow.pinch ? touches.size < 2 : e.pointerId === grow.id)) { grow = null; stopOthers(); setTimeout(commit, 0); } };
+    f.addEventListener('pointerup', lift, true); f.addEventListener('pointercancel', lift, true);
     f.addEventListener('pointerdown', e => redirect(e, e => new PointerEvent('pointerdown', { ...base(e), pointerId: e.pointerId, pointerType: e.pointerType, isPrimary: e.isPrimary })), true);
     f.addEventListener('wheel', e => redirect(e, e => new WheelEvent('wheel', { ...base(e), deltaX: e.deltaX, deltaY: e.deltaY, deltaMode: e.deltaMode })), { capture: true, passive: false });
     f.addEventListener('pointerdown', e => {
@@ -344,9 +425,11 @@
       if (p) { select({ kind: 'photo', i: +p.dataset.p }); return; }   // the card drags photos itself
       const mv = e.target.closest('[data-move]');
       if (!mv) { select(null); return; }
-      const k = mv.dataset.move, m = secOf(k), q = rectOf({ kind: 'sec', key: k }), pr = f.getBoundingClientRect();
+      // first tap picks the whole part; a tap inside the picked part picks the single piece under the finger
+      const sk = mv.dataset.move, inSel = sel && sel.kind !== 'photo' && sel.key.split('/')[0] === sk, it = inSel && itemOf(e.target, mv);
+      const k = it ? itemKey(it, mv) : sk, m = secOf(k), q = rectOf({ kind: 'sec', key: k }), pr = f.getBoundingClientRect();
       select({ kind: 'sec', key: k });
-      drag = { k, el: mv, x: e.clientX, y: e.clientY, x0: m.x, y0: m.y, cx: q ? ((q.left + q.right) / 2 - pr.left) / scale() : null };
+      drag = { k, el: it || mv, item: !!it, x: e.clientX, y: e.clientY, x0: m.x, y0: m.y, cx: q ? ((q.left + q.right) / 2 - pr.left) / scale() : null };
       f.setPointerCapture(e.pointerId); f.classList.add('dragging');
     });
     f.addEventListener('pointermove', e => {
@@ -356,7 +439,7 @@
       let snapped = false;
       if (drag.cx != null && !e.altKey) { const c = drag.cx + (x - drag.x0); if (Math.abs(c - 540) < 10) { x += Math.round(540 - c); snapped = true; } }   // snap to the centre line
       guide.style.display = snapped ? 'block' : 'none';
-      Object.assign(m, { x, y }); drag.el.style.cssText = styleOf(drag.k); overlay();
+      Object.assign(m, { x, y }); if (drag.item) applyItem(drag.k); else drag.el.style.cssText = styleOf(drag.k); overlay();
     });
     const end = () => { if (drag) { drag = null; f.classList.remove('dragging'); guide.style.display = 'none'; } };
     f.addEventListener('pointerup', end); f.addEventListener('pointercancel', end);

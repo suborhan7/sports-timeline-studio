@@ -462,6 +462,7 @@
     photo: {
       get: i => live(i) || { dx: 0, dy: 0, zoom: 1 }, changed: () => {}, box: el => el.closest('.ph'),
     },
+    cancelDrag: () => { drag = null; frame.classList.remove('dragging'); },
     extras: {
       get: () => (pics()).map((p, i) => { const t = p && live(i); return t ? [t.dx, t.dy, t.zoom] : null; }),
       set: v => (v || []).forEach((x, i) => { const t = live(i); if (t && x) [t.dx, t.dy, t.zoom] = x; }),
