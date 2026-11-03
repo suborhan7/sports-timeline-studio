@@ -53,7 +53,7 @@ The logo is the page's original lettering, traced to vector from `brand/original
 
 ## Footer strip
 
-Every poster can end with the page strip, a sponsor strip made in the studio (label + up to 4 logos, optionally above the page strip), a sponsor's own banner picture (shown in full), or nothing. Sponsor logos and banner are saved on the phone. Before: the page strip (slogan on the left, ফলো করুন with the page address, white logo on the right; the slogan shrinks to fit so nothing overlaps), a sponsor/ad banner image, or nothing.
+Every poster can end with the page strip (slogan on the left, ফলো করুন with the page address, white logo on the right; the slogan shrinks to fit so nothing overlaps), a sponsor strip made in the studio (label + up to 4 logos, optionally above the page strip), a sponsor's own banner picture (shown in full, never cropped), or nothing. Sponsor logos and banner are saved on the phone.
 
 ## Install as an app
 
