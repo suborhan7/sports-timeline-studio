@@ -12,7 +12,7 @@
   const fresh = () => ({
     card: 'news', size: 'portrait', theme: 'neo', pair: 'sporty', hf: 'Anek Bangla', bf: 'Hind Siliguri', hscale: 100,
     bn: true, pattern: true, logoStyle: 'stacked', logoPos: 'auto', logoColor: 'white', logoA: '#ffffff', logoB: '#e0a030',
-    foot: 'brand', slogan: 'সব খেলার গল্প, *একটাই টাইমলাইনে*', handle: 'fb.com/sportstimelinebd',
+    foot: 'brand', spText: 'স্পনসর', footKeep: false, slogan: 'সব খেলার গল্প, *একটাই টাইমলাইনে*', handle: 'fb.com/sportstimelinebd',
     ui: 'bn', lang: 'bn', group: '', data: {}, dataEn: {}, layouts: {}, moves: {}, hidden: {},
   });
   let state = fresh();
@@ -30,7 +30,7 @@
   ST.ui = state.ui; ST.lang = state.lang;
   // pictures live only in memory (and in the photo library), never in localStorage
   const photos = {};          // card id -> [photo]
-  const media = { bg: '', sponsor: '' };
+  const media = { bg: '', sponsor: '', spLogos: [] };
   const teamColors = {};      // 1|2 -> colour from that team's crest
   let saveT = 0;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* full or blocked */ } }, 300); };
@@ -38,7 +38,10 @@
   const card = () => ST.card(state.card);
   const layout = () => { const c = card(); const L = state.layouts[c.id]; return c.layouts[L] ? L : Object.keys(c.layouts)[0]; };
   const H = () => ST.SIZES[state.size].H;
-  const footH = () => state.foot === 'off' ? 0 : { portrait: 110, square: 96, story: 140 }[state.size];
+  const baseFoot = () => ({ portrait: 110, square: 96, story: 140 }[state.size]);
+  const spon = () => state.foot === 'sponsor' || state.foot === 'splogo';
+  // a sponsor strip replaces the page strip, or sits on top of it when "keep the page strip too" is ticked
+  const footH = () => state.foot === 'off' ? 0 : spon() && state.footKeep ? baseFoot() + Math.round(baseFoot() * 0.9) : baseFoot();
   const pics = () => (photos[state.card] ||= []);
   const moveKey = () => `${state.card}:${layout()}:${state.size}`;
   const say = t => { $('#status').textContent = t; };
@@ -151,10 +154,16 @@
 
   function footHtml() {
     const fh = footH(); if (!fh) return '';
-    const y = H() - fh;
-    if (state.foot === 'sponsor') return `<div class="mv" data-move="foot"><div class="st-foot sponsor" style="top:${y}px;height:${fh}px">${media.sponsor ? `<img src="${media.sponsor}">` : '<div class="ph-hint" data-slot="sponsor">বিজ্ঞাপনের ব্যানার দিন</div>'}</div></div>`;
+    const keep = spon() && state.footKeep, sh = keep ? fh - baseFoot() : fh, y = H() - fh;
+    let sp = '';
+    if (state.foot === 'sponsor') sp = `<div class="st-foot sponsor" style="top:${y}px;height:${sh}px">${media.sponsor ? `<img class="sp-fill" src="${media.sponsor}" alt=""><img src="${media.sponsor}" alt="">` : `<div class="ph-hint" data-slot="sponsor">${tr('স্পনসরের ব্যানার দিন ~ Add the sponsor banner')}</div>`}</div>`;
+    if (state.foot === 'splogo') sp = `<div class="st-spon" style="top:${y}px;height:${sh}px"><div class="sp-lbl">${ST.esc(state.spText)}</div>
+      <div class="sp-logos">${media.spLogos.length ? media.spLogos.map(l => `<div class="sp-chip"><img src="${l}" alt=""></div>`).join('') : `<div class="ph-hint" data-slot="splogo">${tr('স্পনসরের লোগো দিন ~ Add sponsor logos')}</div>`}</div>
+      ${keep ? '' : `<div class="flogo" style="--logo-a:#fff;--logo-b:#fff">${ST_BRAND.stacked}</div>`}</div>`;
+    if (sp && !keep) return `<div class="mv" data-move="foot">${sp}</div>`;
+    const by = H() - baseFoot(), bh = baseFoot();
     // three fixed columns, so nothing can push into anything else on any screen: slogan | follow + page | logo
-    return `<div class="mv" data-move="foot"><div class="st-foot" style="top:${y}px;height:${fh}px"><div class="slogan" data-fit data-min=".5"><span>${ST.rich(state.slogan, false)}</span></div>
+    return `<div class="mv" data-move="foot">${sp}<div class="st-foot" style="top:${by}px;height:${bh}px"><div class="slogan" data-fit data-min=".5"><span>${ST.rich(state.slogan, false)}</span></div>
       <div class="fcta"><div class="follow">${ST.t('ফলো করুন', 'Follow')} ➜</div>${state.handle ? `<div class="handle">${ST.esc(state.handle)}</div>` : ''}</div>
       <div class="flogo" style="--logo-a:#fff;--logo-b:#fff">${ST_BRAND.stacked}</div></div></div>`;
   }
@@ -336,7 +345,7 @@
   picker.addEventListener('change', async () => {
     const f = picker.files[0]; picker.value = ''; if (!f) return;
     const src = await ST.readFile(f);
-    if (pickSlot === 'sponsor') { media.sponsor = src; render(); } else await setPhoto(state.card, +pickSlot, src);
+    if (pickSlot === 'sponsor') { await setSponsor(src); } else if (pickSlot === 'splogo') { await addSpLogos([f]); } else await setPhoto(state.card, +pickSlot, src);
   });
   frame.addEventListener('click', e => { const h = e.target.closest('[data-slot]'); if (!h) return; pickSlot = h.dataset.slot; picker.click(); });
 
@@ -376,11 +385,41 @@
   }
   function syncBrand() {
     $('#logoCustom').hidden = state.logoColor !== 'custom';
-    $('#footBrand').hidden = state.foot !== 'brand'; $('#footSponsor').hidden = state.foot !== 'sponsor';
+    $('#footBrand').hidden = !(state.foot === 'brand' || (spon() && state.footKeep)); $('#footSponsor').hidden = state.foot !== 'sponsor';
+    $('#footLogos').hidden = state.foot !== 'splogo'; $('#footKeepRow').hidden = !spon(); $('#spClear').hidden = !spon() || !(media.sponsor || media.spLogos.length);
+    $('#spThumbs').innerHTML = media.spLogos.map((l, i) => `<button type="button" class="sp-th" data-sp="${i}" title="${tr('মুছুন ~ Remove')}"><img src="${l}" alt=""><b>✕</b></button>`).join('');
   }
   $('#bgFile').addEventListener('change', async e => { const f = e.target.files[0]; media.bg = f ? await ST.readFile(f) : ''; $('#bgClear').hidden = !media.bg; render(); });
   $('#bgClear').addEventListener('click', () => { media.bg = ''; $('#bgFile').value = ''; $('#bgClear').hidden = true; render(); });
-  $('#sponsorFile').addEventListener('change', async e => { const f = e.target.files[0]; media.sponsor = f ? await ST.readFile(f) : ''; render(); });
+  // sponsor banner and logos are kept on this phone (IndexedDB), so they are still there tomorrow
+  const kv = (() => {
+    let db; const open = () => db ||= new Promise((ok, no) => { const r = indexedDB.open('st_media', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+    const tx = async (mode, fn) => { const d = await open(); return new Promise((ok, no) => { const t = d.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => ok(q && q.result); t.onerror = () => no(t.error); }); };
+    return { get: k => tx('readonly', s => s.get(k)).catch(() => null), set: (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => {}) };
+  })();
+  // big pictures are shrunk to 1600 px wide first (a strip is only 1080 px wide)
+  const shrink = async src => {
+    const img = await ST.loadImage(src), k = Math.min(1, 1600 / img.naturalWidth); if (k === 1) return src;
+    const cv = Object.assign(document.createElement('canvas'), { width: Math.round(img.naturalWidth * k), height: Math.round(img.naturalHeight * k) });
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); return cv.toDataURL('image/png');
+  };
+  const saveSponsor = () => { kv.set('sponsor', media.sponsor); kv.set('spLogos', media.spLogos); };
+  async function setSponsor(src) { media.sponsor = src ? await shrink(src) : ''; saveSponsor(); syncBrand(); render(); }
+  async function addSpLogos(files) {
+    for (const f of [...files]) {
+      if (media.spLogos.length >= 4) break;
+      let src = await shrink(await ST.readFile(f));
+      try { src = await ST.clearLogoBg(src); } catch (e) { /* keep as it is */ }
+      media.spLogos.push(src);
+    }
+    saveSponsor(); syncBrand(); render();
+  }
+  $('#sponsorFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await setSponsor(await ST.readFile(f)); });
+  $('#spFiles').addEventListener('change', async e => { const fs = [...e.target.files]; e.target.value = ''; await addSpLogos(fs); });
+  $('#spThumbs').addEventListener('click', e => { const b = e.target.closest('[data-sp]'); if (!b) return; media.spLogos.splice(+b.dataset.sp, 1); saveSponsor(); syncBrand(); render(); });
+  $('#spClear').addEventListener('click', () => { media.sponsor = ''; media.spLogos = []; saveSponsor(); syncBrand(); render(); });
+  bind('#spText', 'spText', 'input'); bind('#footKeep', 'footKeep', 'change', syncBrand);
+  Promise.all([kv.get('sponsor'), kv.get('spLogos')]).then(([b, l]) => { media.sponsor = b || ''; media.spLogos = Array.isArray(l) ? l : []; syncBrand(); render(); });
 
   // ---------------------------------------------------------------- photo drag / wheel (sections are moved by studio-edit)
   const posterScale = () => frame.getBoundingClientRect().width / 1080;

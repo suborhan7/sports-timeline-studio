@@ -288,7 +288,20 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
 .st-foot .flogo { width: 120px; line-height: 0; }
 .st-foot .flogo svg { width: 100%; height: auto; }
 .st-foot.sponsor { padding: 0; background: #fff; border-top: 0; }
-.st-foot.sponsor img { width: 100%; height: 100%; object-fit: cover; }
+.st-foot.sponsor { position: absolute; overflow: hidden; }
+.st-foot.sponsor img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.st-foot.sponsor img.sp-fill { object-fit: cover; filter: blur(18px) brightness(.85); transform: scale(1.2); }
+/* sponsor strip built in the studio: label | sponsor logos on white chips | page logo */
+.st-spon { left: 0; width: 1080px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 10px 40px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--acc) 22%, var(--pan)), var(--pan) 60%); color: var(--pink); border-top: 5px solid var(--acc); }
+.st-spon + .st-foot { border-top-width: 2px; }
+.st-spon .sp-lbl { font-family: 'Anek Bangla', var(--hf); font-weight: 800; font-size: 30px; line-height: 1.2; padding-top: .1em; white-space: nowrap; letter-spacing: .02em; color: var(--acc); max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.st-spon .sp-logos { display: flex; align-items: center; justify-content: center; gap: 16px; height: 100%; min-width: 0; }
+.st-spon .sp-chip { flex: 0 1 190px; height: 78%; min-width: 0; background: #fff; border-radius: 12px; padding: 6px 12px; display: grid; place-items: center; }
+.st-spon .sp-chip img { position: static; max-width: 100%; max-height: 100%; object-fit: contain; }
+.st-spon .ph-hint { position: static; font-size: 22px; }
+.st-spon .flogo { width: 110px; line-height: 0; }
+.st-spon .flogo svg { width: 100%; height: auto; }
 
 /* ================================================================ cards2.js: player moments, boards, results, comparison */
 .toprow { display: flex; align-items: center; gap: 16px; max-width: 760px; overflow: hidden; }

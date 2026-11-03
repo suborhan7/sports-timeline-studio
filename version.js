@@ -1,1 +1,1 @@
-self.STUDIO_VERSION = 'v10';
+self.STUDIO_VERSION = 'v11';

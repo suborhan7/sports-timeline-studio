@@ -71,14 +71,21 @@
         <label>দ্বিতীয় রং<input type="color" id="logoB"></label>
       </div>
       <label>নিচের স্ট্রিপ<select id="foot">
-        <option value="brand">টাইমলাইন স্ট্রিপ (স্লোগান + পেজ)</option><option value="sponsor">বিজ্ঞাপন / স্পনসর ব্যানার</option><option value="off">কিছু না</option></select></label>
+        <option value="brand">টাইমলাইন স্ট্রিপ (স্লোগান + পেজ)</option><option value="splogo">স্পনসর স্ট্রিপ (লোগো + লেখা, এখানেই বানান)</option><option value="sponsor">স্পনসরের তৈরি ব্যানার (ছবি আপলোড)</option><option value="off">কিছু না</option></select></label>
       <div id="footBrand">
         <label>স্লোগান (*তারা* দিলে সোনালি)<input id="slogan"></label>
         <label>পেজের ঠিকানা<input id="handle"></label>
       </div>
       <div id="footSponsor" hidden>
-        <label>ব্যানারের ছবি (চওড়া ছবি, অটো বসবে)<input type="file" accept="image/*" id="sponsorFile"></label>
+        <label>ব্যানারের ছবি (চওড়া ছবি, পুরোটা দেখা যাবে)<input type="file" accept="image/*" id="sponsorFile"></label>
       </div>
+      <div id="footLogos" hidden>
+        <label>স্ট্রিপের লেখা<input id="spText"></label>
+        <label>স্পনসরের লোগো (একসাথে ৪টা পর্যন্ত)<input type="file" accept="image/*" multiple id="spFiles"></label>
+        <div class="sp-thumbs" id="spThumbs"></div>
+      </div>
+      <label class="check" id="footKeepRow" hidden><input type="checkbox" id="footKeep"> নিচে টাইমলাইন স্ট্রিপও রাখো</label>
+      <button type="button" id="spClear" class="small" hidden>স্পনসর মুছে ফেলো</button>
     </details>
 
     <details class="card-sec" id="secParts"><summary>পোস্টারে কী কী থাকবে</summary>

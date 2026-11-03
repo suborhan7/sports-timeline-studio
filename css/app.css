@@ -111,4 +111,8 @@ button:disabled { opacity: .5; }
 .install-card { max-width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
 .install-card b { color: var(--gold); font-size: 18px; }
 .install-card p { line-height: 1.6; }
+.sp-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.sp-th { position: relative; width: 64px; height: 44px; padding: 4px; background: #fff; border-radius: 8px; }
+.sp-th img { width: 100%; height: 100%; object-fit: contain; }
+.sp-th b { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #c0392b; color: #fff; font-size: 11px; line-height: 18px; }
 .slot-row button.on { border-color: var(--gold); color: var(--gold); }
