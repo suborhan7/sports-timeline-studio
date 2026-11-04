@@ -22,7 +22,7 @@
     'রং আর ফন্ট': 'Colours and fonts', 'ফন্টের জোড়া (এক চাপে)': 'Font pair (one tap)', 'শিরোনামের ফন্ট': 'Headline font', 'লেখার ফন্ট': 'Body font',
     'শিরোনামের সাইজ': 'Headline size', 'সংখ্যা বাংলায় (2 → ২)': 'Bangla digits (2 → ২)', 'পেছনে টাইমলাইন ডিজাইন': 'Timeline pattern in the background',
     'নিজের ব্যাকগ্রাউন্ড ছবি (ঐচ্ছিক)': 'Your own background picture (optional)', '✕ ব্যাকগ্রাউন্ড সরাও': '✕ Remove background',
-    'লোগো আর নিচের স্ট্রিপ': 'Logo and footer strip', 'লোগো': 'Logo', 'দুই লাইন': 'Two lines', 'এক লাইন': 'One line', 'গোল ব্যাজ': 'Round badge', 'লোগো নেই': 'No logo',
+    'লোগো, স্পনসর আর নিচের স্ট্রিপ': 'Logo, sponsor and footer strip', 'লোগো': 'Logo', 'দুই লাইন': 'Two lines', 'এক লাইন': 'One line', 'গোল ব্যাজ': 'Round badge', 'লোগো নেই': 'No logo',
     'কোথায়': 'Where', 'অটো (ফাঁকা কোণে)': 'Auto (calmest corner)', 'উপরে বামে': 'Top left', 'উপরে ডানে': 'Top right', 'নিচে বামে': 'Bottom left', 'নিচে ডানে': 'Bottom right',
     'লোগোর রং': 'Logo colour', 'মূল রং': 'Main colour', 'দ্বিতীয় রং': 'Second colour', 'নিচের স্ট্রিপ': 'Footer strip',
     'টাইমলাইন স্ট্রিপ (স্লোগান + পেজ)': 'Timeline strip (slogan + page)', 'বিজ্ঞাপন / স্পনসর ব্যানার': 'Ad / sponsor banner', 'স্পনসর স্ট্রিপ (লোগো + লেখা, এখানেই বানান)': 'Sponsor strip (logos + text, made here)', 'স্পনসরের তৈরি ব্যানার (ছবি আপলোড)': 'Sponsor\'s own banner (upload a picture)', 'ব্যানারের ছবি (চওড়া ছবি, পুরোটা দেখা যাবে)': 'Banner picture (wide, shown in full)', 'স্ট্রিপের লেখা': 'Strip text', 'স্পনসরের লোগো (একসাথে ৪টা পর্যন্ত)': 'Sponsor logos (up to 4)', 'নিচে টাইমলাইন স্ট্রিপও রাখো': 'Keep the Timeline strip under it too', 'স্পনসর মুছে ফেলো': 'Remove the sponsor', 'স্পনসর': 'Sponsor', 'কিছু না': 'Nothing',
