@@ -308,7 +308,16 @@
     $$('[data-f]', $('#fields')).forEach(i => { i.value = d[i.dataset.f] ?? ''; });
     buildPhotos();
   }
-  $('#fields').addEventListener('input', e => { const i = e.target.closest('[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); });
+  $('#fields').addEventListener('input', e => { const i = e.target.closest('[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); showTyped(i.value); });
+  // typing into a field whose part was removed from the poster (✕ or the parts list) brings that part back
+  function showTyped(v) {
+    v = String(v || '').replace(/\*/g, '').trim(); if (v.length < 2) return;
+    const hid = StudioEdit.hiddenOf(), want = [v, ST.bnDigits(v)];
+    const back = Object.keys(hid).filter(k => hid[k] && !k.includes('/')).filter(k => { const el = $(`#st [data-move="${k}"]`); return el && want.some(w => el.textContent.includes(w)); });
+    if (!back.length) return;
+    back.forEach(k => { delete hid[k]; }); render(); StudioEdit.commit();
+    say(tr('লুকানো অংশটা আবার পোস্টারে দেখানো হলো ✓ ~ That part was hidden; it is back on the poster ✓'));
+  }
   $('#fields').addEventListener('change', e => { const i = e.target.closest('select[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); });
   $('#fields').addEventListener('click', e => { if (e.target.id !== 'resetText') return; D()[state.card] = { ...sample(card()) }; buildForm(); render(); });
   $('#layout').addEventListener('change', e => { state.layouts[state.card] = e.target.value; render(); StudioEdit.reset(); });
