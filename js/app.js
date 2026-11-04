@@ -73,6 +73,7 @@
      background removed, a player gets cut out when the slot needs it. */
   async function setPhoto(cid, i, src, keepName) {
     const c = ST.card(cid), slot = c.photos[i];
+    src = await ST.fit(src);
     let a = await ST.analyse(src);
     if (slot.mode === 'logo' && !a.alpha) { src = await ST.clearLogoBg(src); a = await ST.analyse(src); }
     const p = { src, w: a.w, h: a.h, fx: a.fx, fy: a.fy, ty: a.ty, alpha: a.alpha, lum: a.lum, dx: 0, dy: 0, zoom: 1, name: keepName || '' };
@@ -89,7 +90,7 @@
     if (!list.length) return;
     say(tr('ছবি দেখা হচ্ছে… ~ Looking at the photos…'));
     const items = [];
-    for (const f of list) { const src = await ST.readFile(f); items.push({ src, kind: ST.kindOf(await ST.analyse(src)) }); }
+    for (const f of list) { const src = await ST.fit(await ST.readFile(f)); items.push({ src, kind: ST.kindOf(await ST.analyse(src)) }); }
     const free = c.photos.map((s, i) => i).filter(i => !pics()[i]);
     const want = { logo: ['logo'], cut: ['cut', 'scene'], scene: ['scene', 'cut'] };
     const order = it => want[it.kind];
@@ -156,9 +157,9 @@
     const fh = footH(); if (!fh) return '';
     const keep = spon() && state.footKeep, sh = keep ? fh - baseFoot() : fh, y = H() - fh;
     let sp = '';
-    if (state.foot === 'sponsor') sp = `<div class="st-foot sponsor" style="top:${y}px;height:${sh}px">${media.sponsor ? `<img class="sp-fill" src="${media.sponsor}" alt=""><img src="${media.sponsor}" alt="">` : `<div class="ph-hint" data-slot="sponsor">${tr('স্পনসরের ব্যানার দিন ~ Add the sponsor banner')}</div>`}</div>`;
+    if (state.foot === 'sponsor') sp = `<div class="st-foot sponsor" style="top:${y}px;height:${sh}px">${media.sponsor ? `<img class="sp-fill" src="${ST.url(media.sponsor)}" alt=""><img src="${ST.url(media.sponsor)}" alt="">` : `<div class="ph-hint" data-slot="sponsor">${tr('স্পনসরের ব্যানার দিন ~ Add the sponsor banner')}</div>`}</div>`;
     if (state.foot === 'splogo') sp = `<div class="st-spon" style="top:${y}px;height:${sh}px"><div class="sp-lbl">${ST.esc(state.spText)}</div>
-      <div class="sp-logos">${media.spLogos.length ? media.spLogos.map(l => `<div class="sp-chip"><img src="${l}" alt=""></div>`).join('') : `<div class="ph-hint" data-slot="splogo">${tr('স্পনসরের লোগো দিন ~ Add sponsor logos')}</div>`}</div>
+      <div class="sp-logos">${media.spLogos.length ? media.spLogos.map(l => `<div class="sp-chip"><img src="${ST.url(l)}" alt=""></div>`).join('') : `<div class="ph-hint" data-slot="splogo">${tr('স্পনসরের লোগো দিন ~ Add sponsor logos')}</div>`}</div>
       ${keep ? '' : `<div class="flogo" style="--logo-a:#fff;--logo-b:#fff">${ST_BRAND.stacked}</div>`}</div>`;
     if (sp && !keep) return `<div class="mv" data-move="foot">${sp}</div>`;
     const by = H() - baseFoot(), bh = baseFoot();
@@ -182,15 +183,15 @@
       if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(tr(s.label).replace(/\s*\(.*\)/, ''))}</div></div>`;
       const q = shown(p, mode), as = mode === 'cut' && q === p && !p.alpha ? 'scene' : mode;
       // a photo moved or zoomed out inside its frame: a soft blurred copy fills the frame, so there is never an empty strip
-      const fill = as === 'scene' && (q.dx || q.dy || (q.zoom || 1) < 1) ? `<img class="ph-fill" src="${q.src}" alt="">` : '';
-      return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}">${fill}<img data-p="${i}" src="${q.src}" style="${ST.place(q, w, h, as)}"></div>`;
+      const u = ST.url(q.src), fill = as === 'scene' && (q.dx || q.dy || (q.zoom || 1) < 1) ? `<img class="ph-fill" src="${u}" alt="">` : '';
+      return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}">${fill}<img data-p="${i}" src="${u}" style="${ST.place(q, w, h, as)}"></div>`;
     };
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
     const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, t: ST.t };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
     const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111', ...(c.vars || {}) }).map(([k, v]) => `--${k}:${v}`).join(';')
       + `;--hf:'${state.hf}';--hw:${f.w || 700};--hs:${f.stretch || '100%'};--bf:'${state.bf}';--bw:${fb.bw || 500};height:${Hh}px`;
-    const bg = media.bg ? `<div class="bgl image" style="background-image:url(${media.bg})"></div>` : `<div class="bgl ${state.pattern ? 'pattern' : ''} ${th.light ? 'light' : ''} ${th.flat ? 'flat' : ''}"></div>`;
+    const bg = media.bg ? `<div class="bgl image" style="background-image:url(${ST.url(media.bg)})"></div>` : `<div class="bgl ${state.pattern ? 'pattern' : ''} ${th.light ? 'light' : ''} ${th.flat ? 'flat' : ''}"></div>`;
     poster.innerHTML = `<div class="st ${th.light ? 'light' : ''}" id="st" style="${vars}">${bg}${c.render(D()[c.id], ctx)}${logoHtml(c, L, CB)}${footHtml()}</div>`;
     const st = $('#st');
     // headline size slider: scales every headline-font block before fitting
@@ -308,7 +309,11 @@
     $$('[data-f]', $('#fields')).forEach(i => { i.value = d[i.dataset.f] ?? ''; });
     buildPhotos();
   }
-  $('#fields').addEventListener('input', e => { const i = e.target.closest('[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); showTyped(i.value); });
+  let typeT = 0;
+  $('#fields').addEventListener('input', e => {
+    const i = e.target.closest('[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value;
+    cancelAnimationFrame(typeT); typeT = requestAnimationFrame(() => { render(); showTyped(i.value); });
+  });
   // typing into a field whose part was removed from the poster (✕ or the parts list) brings that part back
   function showTyped(v) {
     v = String(v || '').replace(/\*/g, '').trim(); if (v.length < 2) return;
@@ -556,7 +561,11 @@
     buildStyle(); markStyle(); buildForm(); render(); StudioEdit.reset();
   }
   // the panel switch also turns the poster to that language; "Poster language" can still mix them
-  $('#uiSwitch').addEventListener('click', e => { const b = e.target.closest('[data-ui]'); if (!b || b.dataset.ui === state.ui) return; setUi(b.dataset.ui); setLang(b.dataset.ui); });
+  $('#uiSwitch').addEventListener('click', e => {
+    const b = e.target.closest('[data-ui]'); if (!b || b.dataset.ui === state.ui) return;
+    // one rebuild for both (panel + poster), not two
+    const r = render; render = () => {}; try { setUi(b.dataset.ui); setLang(b.dataset.ui); } finally { render = r; } render();
+  });
   $('#lang').value = state.lang;
   $('#lang').addEventListener('change', e => setLang(e.target.value));
 

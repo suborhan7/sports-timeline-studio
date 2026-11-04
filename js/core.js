@@ -94,6 +94,32 @@
   /* Look at a picture once: size, see-through or not, where the interesting part is (focus) and how bright it is.
      The focus is the centre of detail (edges) weighted towards skin tones and the upper middle, so news photos
      crop around the people rather than the grass. */
+  /* Pictures as short blob: links. A phone photo as a data: link is several MB of text, and the poster is rebuilt on
+     every key press, so the browser would read and decode it again each time; a blob: link is a few bytes. */
+  const urls = new Map();
+  ST.url = src => {
+    if (!src || !src.startsWith('data:')) return src || '';
+    let u = urls.get(src);
+    if (!u) {
+      const i = src.indexOf(','), meta = src.slice(5, i), bin = atob(src.slice(i + 1)), a = new Uint8Array(bin.length);
+      for (let k = 0; k < bin.length; k++) a[k] = bin.charCodeAt(k);
+      u = URL.createObjectURL(new Blob([a], { type: meta.split(';')[0] || 'image/png' }));
+      if (urls.size > 80) { for (const [k, v] of urls) { URL.revokeObjectURL(v); urls.delete(k); break; } }
+      urls.set(src, u);
+    }
+    return u;
+  };
+  // a big phone photo is shrunk to 2000 px on its long side (a poster is 1080 px wide): faster everywhere, cut-outs too
+  ST.fit = async (src, max = 2000) => {
+    const img = await ST.loadImage(src), w = img.naturalWidth, h = img.naturalHeight, k = max / Math.max(w, h);
+    if (k >= 1) return src;
+    const cv = Object.assign(document.createElement('canvas'), { width: Math.round(w * k), height: Math.round(h * k) }), g = cv.getContext('2d');
+    g.drawImage(img, 0, 0, cv.width, cv.height);
+    // keep see-through pictures as PNG, everything else as a good JPEG
+    const d = g.getImageData(0, 0, cv.width, cv.height).data; let clear = false;
+    for (let i = 3; i < d.length; i += 4 * 97) if (d[i] < 250) { clear = true; break; }
+    return clear ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', 0.92);
+  };
   ST.analyse = async src => {
     const img = await ST.loadImage(src);
     const w = img.naturalWidth, h = img.naturalHeight;
