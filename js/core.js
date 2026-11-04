@@ -175,17 +175,36 @@
     document.head.appendChild(s);
   });
   const phone = matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+  // the cutting runs in a Web Worker (js/cut-worker.js) so the screen never freezes; if a browser can't, it runs here
+  let worker = null, jobs = 0;
+  const waiting = new Map();
+  const inWorker = (blob, model, onProgress) => new Promise((ok, no) => {
+    if (!worker) {
+      worker = new Worker('js/cut-worker.js');
+      worker.onmessage = e => { const w = waiting.get(e.data.id); if (!w) return;
+        if (e.data.progress) return w.p(e.data.progress);
+        waiting.delete(e.data.id); e.data.error ? w.no(new Error(e.data.error)) : w.ok(e.data.blob); };
+      worker.onerror = e => { waiting.forEach(w => w.no(new Error(e.message || 'worker failed'))); waiting.clear(); worker = null; };
+    }
+    const id = ++jobs; waiting.set(id, { ok, no, p: x => onProgress(x.k, x.cur, x.total) });
+    worker.postMessage({ id, blob, model });
+  });
+  let workerOk = typeof Worker !== 'undefined';
   ST.cutOut = async (blobOrSrc, say = () => {}) => {
     say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
-    await loadBgLib();
-    await new Promise(r => setTimeout(r, 50));   // let the message paint before the heavy work starts
-    const blob = await BgRemoval.removeBackground(blobOrSrc, {
-      model: phone ? 'small' : 'medium', proxyToWorker: false, output: { format: 'image/png', quality: 1 },
-      progress: (k, cur, total) => {
-        if (k.startsWith('fetch') && total) say(`AI মডেল নামছে (প্রথমবার): ${Math.round(cur / total * 100)}%`);
-        else if (k.startsWith('compute')) say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
-      },
-    });
+    const model = phone ? 'small' : 'medium';
+    const progress = (k, cur, total) => {
+      if (k.startsWith('fetch') && total) say(`AI মডেল নামছে (প্রথমবার): ${Math.round(cur / total * 100)}%`);
+      else if (k.startsWith('compute')) say(ST.tr('ব্যাকগ্রাউন্ড কাটা হচ্ছে… ~ Removing the background…'));
+    };
+    const input = typeof blobOrSrc === 'string' ? await (await fetch(blobOrSrc)).blob() : blobOrSrc;
+    let blob = null;
+    if (workerOk) try { blob = await inWorker(input, model, progress); } catch (e) { console.warn('cut-out worker failed, cutting here', e); workerOk = false; }
+    if (!blob) {
+      await loadBgLib();
+      await new Promise(r => setTimeout(r, 50));   // let the message paint before the heavy work starts
+      blob = await BgRemoval.removeBackground(input, { model, proxyToWorker: false, output: { format: 'image/png', quality: 1 }, progress });
+    }
     say(ST.tr('কাট-আউট রেডি ✓ ~ Cut-out ready ✓'));
     return JerseyColors.trimTransparent(await JerseyColors.keepMainSubject(await ST.readFile(blob)));
   };
