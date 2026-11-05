@@ -609,3 +609,14 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
 .xp-head.big .xp-sub > :not(.ph) { display: none; }
 .xp-head.big .xp-sub:not(:has(.ph)) { display: none; }
 .mv-in.big .xa-num, .mv-in.big .xk-num { display: none; }
+
+/* shirt board: position small across the chest, the number big under it, both well inside the shirt */
+.xk-chest { position: absolute; left: calc(var(--s) * -.22); width: calc(var(--s) * .44); top: calc(var(--s) * -.31); display: flex; flex-direction: column; align-items: center;
+  color: var(--acc-ink); font-family: var(--hf); line-height: 1; }
+.xk-chest small { font-size: calc(var(--s) * .14); font-weight: 800; letter-spacing: .06em; padding: .18em .45em .08em; border-radius: 99px;
+  background: color-mix(in srgb, var(--acc-ink) 14%, transparent); }
+.xk-chest b { font-size: calc(var(--s) * .3); font-weight: 900; margin-top: calc(var(--s) * .03); }
+.xk-chest.solo { top: calc(var(--s) * -.14); }
+.xk-chest.solo small { font-size: calc(var(--s) * .2); background: none; }
+.xk-pl.gk .xk-chest { color: var(--bg); }
+.xk-pl.gk .xk-chest small { background: color-mix(in srgb, var(--bg) 14%, transparent); }

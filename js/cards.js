@@ -316,7 +316,7 @@
             const [x, y] = at(p, S), gk = p.pos === 'GK';
             return `<div class="xk-pl ${gk ? 'gk' : ''}" style="left:${Math.round(x)}px;top:${Math.round(y)}px;--s:${S}px">
               <svg class="xk-shirt" viewBox="0 0 100 100"><path d="${SHIRT}"/><path class="cl" d="M41 5Q50 15 59 5"/></svg>
-              ${p.num ? `<b class="xk-mk">${P(p.num)}</b>` : ''}${cap(p)}
+              <div class="xk-chest ${p.num ? '' : 'solo'}"><small>${P(p.pos)}</small>${p.num ? `<b>${P(p.num)}</b>` : ''}</div>${cap(p)}
               <div class="xk-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
           }).join('');
           return `<div class="xk-pitch" style="${box(0, fy - 20, 1080, fb - fy + 40)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
