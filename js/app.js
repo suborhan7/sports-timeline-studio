@@ -48,6 +48,8 @@
 
   // ---------------------------------------------------------------- photo slots
   // a slot can want another kind of picture in some layouts (modes: { photo: 'scene' } = the full photo, not the cut-out)
+  // a photo spot can belong to some layouts only (the XI's player photos show in the photo-card layout)
+  const slotOn = (c, i, L = layout()) => { const s = c.photos[i]; return !s.only || s.only.includes(L); };
   const slotMode = (c, i, L) => { const s = c.photos[i]; return (s.modes && s.modes[L]) || (s.side && L === 'side' ? s.side : s.mode); };
   // the picture to draw for a slot: the cut-out when the slot wants a cut-out and one is ready
   function shown(p, mode) {
@@ -91,7 +93,7 @@
     say(tr('ছবি দেখা হচ্ছে… ~ Looking at the photos…'));
     const items = [];
     for (const f of list) { const src = await ST.fit(await ST.readFile(f)); items.push({ src, kind: ST.kindOf(await ST.analyse(src)) }); }
-    const free = c.photos.map((s, i) => i).filter(i => !pics()[i]);
+    const free = c.photos.map((s, i) => i).filter(i => !pics()[i] && slotOn(c, i));
     const want = { logo: ['logo'], cut: ['cut', 'scene'], scene: ['scene', 'cut'] };
     const order = it => want[it.kind];
     let used = 0;
@@ -325,14 +327,15 @@
   }
   $('#fields').addEventListener('change', e => { const i = e.target.closest('select[data-f]'); if (!i) return; D()[state.card][i.dataset.f] = i.value; render(); });
   $('#fields').addEventListener('click', e => { if (e.target.id !== 'resetText') return; D()[state.card] = { ...sample(card()) }; buildForm(); render(); });
-  $('#layout').addEventListener('change', e => { state.layouts[state.card] = e.target.value; render(); StudioEdit.reset(); });
+  $('#layout').addEventListener('change', e => { state.layouts[state.card] = e.target.value; render(); buildPhotos(); StudioEdit.reset(); });
 
   function buildPhotos() {
     const c = card();
     $('#secPhotos').hidden = !c.photos.length;
     $('#photos').innerHTML = c.photos.map((s, i) => {
+      if (!slotOn(c, i)) return '';
       const p = pics()[i];
-      return `<div class="slot"><div class="thumb">${p ? `<img src="${(p.cut || p).src}">` : '📷'}</div><div class="slot-body"><b>${tr(s.label)}</b>
+      return `<div class="slot"><div class="thumb">${p ? `<img src="${(p.cut || p).src}">` : '📷'}</div><div class="slot-body"><b>${ST.esc((s.labelOf && s.labelOf(D()[c.id])) || tr(s.label))}</b>
         <div class="slot-row"><label class="file">${tr(p ? 'বদলাও ~ Change' : 'ছবি দিন ~ Add photo')}<input type="file" accept="image/*" data-slot-file="${i}"></label>
         ${p ? `<button type="button" class="small" data-slot-clear="${i}">✕ ${tr('সরাও ~ Remove')}</button>` : ''}
         ${p && !p.alpha && slotMode(c, i, layout()) !== 'cut' ? `<button type="button" class="small ${p.wantCut ? 'on' : ''}" data-slot-cut="${i}">✂ ${tr(p.wantCut ? 'ব্যাকগ্রাউন্ড ফেরাও ~ Bring background back' : 'ব্যাকগ্রাউন্ড সরাও ~ Remove background')}</button>` : ''}

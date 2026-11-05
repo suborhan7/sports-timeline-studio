@@ -29,6 +29,16 @@
   // small block: label pill + timeline dots, the house style header
   // quote marks drawn as a shape, so every font shows the same marks
   const QM = '<svg viewBox="0 0 120 90" width="1em" height=".75em"><path fill="currentColor" d="M0 90V52Q0 18 30 0l10 12Q22 26 22 44h22v46zm64 0V52q0-34 30-52l10 12q-18 14-18 32h22v46z"/></svg>';
+  // the XI on the pitch: eleven spots of the formation, each with the player typed on that line
+  const SHIRT = 'M30 8L42 3Q50 12 58 3L70 8L95 24L85 44L74 38V96H26V38L15 44L5 24Z';
+  const xiOf = d => {
+    const sl = ST.formationSlots(d.formation), lines = ST.lines(d.players);
+    return sl.map((s, i) => {
+      const p = lines[i] ? ST.player(lines[i]) : { num: '', name: '', tags: [] }, o = ST.posOverride(p.name);
+      if (o) p.name = o.name;
+      return { ...p, pos: o ? o.pos : s.pos, x: s.x, y: s.y };
+    });
+  };
   const kicker = (t, P) => t ? `<div class="kick"><span>${P(t)}</span><i></i><i></i><i class="live"></i></div>` : '';
 
   ST.CARDS = [
@@ -226,34 +236,116 @@
     // ---------------------------------------------------------------- football XI on the pitch
     {
       id: 'pitch', name: 'ফুটবল একাদশ (মাঠে)', icon: '🥅',
-      layouts: { pitch: 'সবুজ মাঠ', tactic: 'ট্যাকটিক বোর্ড (গাঢ়)' },
-      logo: { pitch: ['tr'], tactic: ['tr'] },
-      fields: [['title', 'শিরোনাম', 'text'], ['team', 'দল / ম্যাচ', 'text'], ['formation', 'ফরমেশন (যেমন 4-3-3, 4-2-3-1)', 'text'],
-        ['players', 'খেলোয়াড় (গোলরক্ষক আগে, তারপর ডিফেন্স বাম→ডান, তারপর মাঝমাঠ, শেষে আক্রমণ; নম্বর আগে দিতে পারো)', 'area', 11],
-        ['subs', 'বদলি (কমা দিয়ে)', 'area', 2], ['coach', 'কোচ (ঐচ্ছিক)', 'text']],
-      photos: [{ label: 'দলের লোগো', mode: 'logo', team: 1 }],
-      data: { title: 'শুরুর একাদশ', team: 'বাংলাদেশ বনাম ভারত · এশিয়ান কাপ বাছাই', formation: '4-3-3',
-        players: '1 মিতুল মারমা (GK)\n2 শাকিল আহাদ তপু\n5 তারিক কাজী\n4 তপু বর্মন\n3 সাদ উদ্দিন\n8 হামজা চৌধুরী\n6 জামাল ভূঁইয়া (c)\n10 সোহেল রানা\n7 রাকিব হোসেন\n9 মোরসালিন\n11 শমিত সোম',
-        subs: 'সুজন, ফাহামেদুল, ঋদয়, মিতুল, রহমত, মোহাম্মদ হৃদয়', coach: 'হাভিয়ের কাবরেরা' },
+      layouts: { arena: '৩ডি মাঠ, আলো ঝলমলে ~ 3D pitch under the lights', cards: 'ছবি কার্ড (চারকোনা) ~ Photo cards (square)', kits: 'জার্সি বোর্ড ~ Shirt board' },
+      logo: { arena: ['tr'], cards: ['tr'], kits: ['tr'] },
+      fields: [['title', 'উপরের লেখা ~ Top line', 'text'], ['team', 'দলের নাম ~ Team', 'text'], ['match', 'ম্যাচ / টুর্নামেন্ট ~ Match / tournament', 'text'],
+        ['formation', 'ফরমেশন ~ Formation', 'select:' + ST.formationOptions()],
+        ['mark', 'গোল চিহ্নে / জার্সিতে কী থাকবে ~ What the badge / shirt shows', 'select:pos=পজিশন (LW/CB) ~ Position (LW/CB),num=জার্সি নম্বর ~ Shirt number'],
+        ['players', 'খেলোয়াড় (গোলরক্ষক আগে, তারপর পেছন থেকে সামনে, প্রতি লাইন বাম→ডান; নম্বর আগে দিতে পারো; "LW: নাম" লিখলে পজিশন বদলাবে; (c) অধিনায়ক) ~ Players (keeper first, then back to front, each line left→right; a number first is fine; "LW: name" sets the position; (c) captain)', 'area', 11],
+        ['subs', 'বদলি (কমা দিয়ে) ~ Subs (commas)', 'area', 2], ['coach', 'কোচ (ঐচ্ছিক) ~ Coach (optional)', 'text']],
+      photos: [{ label: 'দলের লোগো ~ Team crest', mode: 'logo', team: 1 }].concat(Array.from({ length: 11 }, (_, k) => ({
+        label: `খেলোয়াড় ${k + 1} এর ছবি ~ Player ${k + 1} photo`, mode: 'scene', only: ['cards'],
+        labelOf: d => { const p = xiOf(d)[k]; return p && p.name ? `${p.pos} · ${p.name}` : ''; } }))),
+      data: { title: 'শুরুর একাদশ', team: 'বাংলাদেশ', match: 'বনাম ভারত · এশিয়ান কাপ বাছাই', formation: '4-3-3', mark: 'pos',
+        players: '1 মিতুল মারমা (GK)\n2 শাকিল আহাদ\n5 তারিক কাজী\n4 তপু বর্মন\n3 সাদ উদ্দিন\n8 হামজা চৌধুরী\n6 জামাল ভূঁইয়া (c)\n10 সোহেল রানা\n7 রাকিব হোসেন\n9 মোরসালিন\n11 শমিত সোম',
+        subs: 'সুজন, ফাহামেদুল, ঋদয়, রহমত, মোহাম্মদ হৃদয়, পাপ্পু', coach: 'হাভিয়ের কাবরেরা' },
+      dataEn: { title: 'Starting XI', team: 'Bangladesh', match: 'vs India · Asian Cup qualifier', formation: '4-3-3', mark: 'pos',
+        players: '1 Mitul Marma (GK)\n2 Shakil Ahad\n5 Tariq Kazi\n4 Topu Barman\n3 Saad Uddin\n8 Hamza Choudhury\n6 Jamal Bhuyan (c)\n10 Sohel Rana\n7 Rakib Hossain\n9 Morsalin\n11 Shamit Shome',
+        subs: 'Sujon, Fahamedul, Ridoy, Rahmat, Mohammad Hridoy, Pappu', coach: 'Javier Cabrera' },
       render(d, c) {
-        const { L, CB, P, sec, ph, t } = c;
-        const fx = 70, fy = 260, fw = 940, fh = CB - fy - (d.subs ? 200 : 90);
-        const shape = [1].concat(String(ST.enDigits(d.formation)).split(/[^0-9]+/).map(Number).filter(n => n > 0));
-        const all = ST.lines(d.players).map(ST.player);
-        let k = 0;
-        const dots = shape.map((n, r) => {
-          const y = fy + fh - 80 - r * ((fh - 170) / Math.max(1, shape.length - 1));
-          return Array.from({ length: n }, (_, j) => {
-            const p = all[k++] || { num: '', name: '', tags: [] }, x = fx + fw * (j + 1) / (n + 1);
-            const face = c.face(p.name);
-            return `<div class="pl" style="left:${Math.round(x)}px;top:${Math.round(y)}px"><div class="shirt">${face ? `<img src="${face}">` : P(p.num || (r ? '' : 'GK'))}</div>
-              <div class="pn" style="width:${Math.round(Math.min(230, fw / (n + 1) - 6))}px;left:${-Math.round(Math.min(230, fw / (n + 1) - 6) / 2)}px">${P(p.name)}${p.tags.includes('c') ? ` <em>(${t('অধি.', 'C')})</em>` : ''}</div></div>`;
+        const { L, CB, H, P, sec, ph, t } = c;
+        const sq = H < 1200, story = H > 1500, xi = xiOf(d), byNum = (d.mark || 'pos') === 'num';
+        const sh = d.subs || d.coach ? (sq ? 96 : story ? 150 : 116) : 0;
+        const y0 = story ? 120 : sq ? 44 : 60, hh = story ? 300 : sq ? 170 : 220;
+        const fy = y0 + hh + (sq ? 6 : story ? 50 : 24), fb = CB - sh - (sh ? 24 : 0) - (sq ? 16 : 30);
+        const cap = p => p.tags.includes('c') ? '<i class="xp-c">C</i>' : '';
+        const mark = p => P(byNum ? (p.num || p.pos) : p.pos);
+        const fm = d.formation ? `<b class="xp-fm">${P((ST.FORMATIONS[d.formation] || {}).rows ? d.formation.replace(/D$/, ' ◆') : d.formation)}</b>` : '';
+        const subs = cls => sec('subs', `<div class="xp-subs ${cls}" style="${box(60, CB - sh - 18, 960, sh)}">
+            ${d.subs ? `<div class="xs-l"><b>${t('বদলি', 'Subs')}</b><span data-fit data-min=".5"><span>${P(d.subs)}</span></span></div>` : ''}
+            ${d.coach ? `<div class="xs-r"><b>${t('কোচ', 'Coach')}</b><span data-fit="w" data-min=".5">${P(d.coach)}</span></div>` : ''}</div>`, !!sh);
+        // biggest size s (from hi down) at which no two players (badge + name) overlap; rect(p, s) -> [l, t, r, b]
+        const fit = (hi, lo, rect) => {
+          for (let s = hi; s > lo; s -= 3) {
+            const R = xi.map(p => rect(p, s)); let ok = true;
+            for (let i = 0; ok && i < R.length; i++) for (let j = i + 1; j < R.length; j++) { const a = R[i], b = R[j]; if (a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]) { ok = false; break; } }
+            if (ok) return s;
+          }
+          return lo;
+        };
+        // tiles and shirts are tall: the keeper gets a full line's gap below the back line instead of the pitch's real one
+        const R = ((ST.FORMATIONS[d.formation] || {}).rows || [0, 0, 0]).length;
+        if (L !== 'arena') xi.forEach(p => { if (p.pos === 'GK' && p.y > .9) p.y = .76 + Math.max(.2, .7 / Math.max(1, R - 1)) * .9; });
+        const ys = xi.map(p => p.y), yMin = Math.min(...ys), yMax = Math.max(...ys);
+
+        if (L === 'cards') {
+          // flat pitch, every player a square photo tile with the name on a slanted band
+          const fx = 40, fw = 1000, fh = fb - fy;
+          const at = (p, T) => { const m = T / 2 + 22, top = fy + T * .5 + 14, bot = fb - T * .72;
+            return [fx + m + p.x * (fw - 2 * m), top + (p.y - yMin) / Math.max(.01, yMax - yMin) * (bot - top)]; };
+          const T = fit(sq ? 150 : 180, 60, (p, T) => { const [x, y] = at(p, T); return [x - T / 2 - 10, y - T / 2 - 14, x + T / 2 + 10, y + T / 2 + T * .16 + 6]; });
+          const tiles = xi.map((p, i) => {
+            const [x, y] = at(p, T), f = !c.has(i + 1) && c.face(p.name);
+            const pic = c.has(i + 1) ? ph(i + 1, 0, 0, T, T, 'xc-ph', 'scene')
+              : f ? `<img class="xc-face" src="${f}" alt="">` : `<div class="xc-blank"><b>${P(p.num || p.pos)}</b></div><div class="ph-hint xc-hint" data-slot="${i + 1}">📷</div>`;
+            return `<div class="xc-pl" style="${box(x - T / 2, y - T / 2, T, T)};--t:${T}px"><div class="xc-tile">${pic}</div>
+              <i class="xc-pos">${P(p.pos)}</i>${p.num && (c.has(i + 1) || f) ? `<i class="xc-num">${P(p.num)}</i>` : ''}${cap(p)}
+              <div class="xc-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
           }).join('');
+          return `<div class="xc-band" style="${box(0, 0, 1080, y0 + hh + 34)}"></div>`
+            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xc-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 96 : 120, sq ? 96 : 120, 'crest inl')}
+                <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${P(d.match)} ${fm}</div></div></div>`)
+            + `<div class="xc-field" style="${box(fx, fy, fw, fh)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
+            + sec('players', `<div class="mv-in">${tiles}</div>`) + subs('xc');
+        }
+
+        if (L === 'kits') {
+          // top-down striped pitch across the whole poster, every player a shirt with the number (or position) on it
+          const fx = 30, fw = 1020, fh = fb - fy;
+          const at = (p, S) => { const m = S / 2 + 40, top = fy + S * .5, bot = fb - S * .75;
+            return [fx + m + p.x * (fw - 2 * m), top + (p.y - yMin) / Math.max(.01, yMax - yMin) * (bot - top)]; };
+          const S = fit(sq ? 120 : 150, 56, (p, S) => { const [x, y] = at(p, S); return [x - S / 2 - 30, y - S / 2 - 6, x + S / 2 + 30, y + S / 2 + S * .36 + 14]; });
+          const shirts = xi.map((p, i) => {
+            const [x, y] = at(p, S), gk = p.pos === 'GK';
+            return `<div class="xk-pl ${gk ? 'gk' : ''}" style="left:${Math.round(x)}px;top:${Math.round(y)}px;--s:${S}px">
+              <svg class="xk-shirt" viewBox="0 0 100 100"><path d="${SHIRT}"/><path class="cl" d="M41 5Q50 15 59 5"/></svg>
+              <b class="xk-mk ${String(mark(p)).length > 2 ? 'sm' : ''}">${mark(p)}</b>${byNum ? '' : p.num ? `<i class="xk-num">${P(p.num)}</i>` : ''}${cap(p)}
+              <div class="xk-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
+          }).join('');
+          return `<div class="xk-pitch" style="${box(0, fy - 20, 1080, fb - fy + 40)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
+            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xk-head" style="${box(60, y0, 700, hh)}"><div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div>
+                <div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${ph(0, 0, 0, sq ? 54 : 64, sq ? 54 : 64, 'crest inl')}<span>${P(d.match)}</span> ${fm}</div></div></div>`)
+            + sec('players', `<div class="mv-in">${shirts}</div>`) + subs('xk');
+        }
+
+        // arena: a pitch tipped back under stadium lights, drawn in perspective; badges shrink a little towards the far end
+        const tw = sq ? 620 : story ? 780 : 660, bw = sq ? 940 : 1000, k = .4;
+        const g = y => y / (1 + k - k * y);
+        const fa = fb - (sq ? 44 : 62), ft = fy + (sq ? 30 : 14);   // room under the keeper for his name, above the striker for his number
+        const pt = (x, y) => { const v = g(y), w = tw + (bw - tw) * v; return [540 + (x - .5) * w, ft + (fa - ft) * v]; };
+        const line = (pts, cls = '') => `<polyline class="${cls}" points="${pts.map(([x, y]) => pt(x, y).map(n => n.toFixed(1)).join(',')).join(' ')}"/>`;
+        const rect = (x0, y0, x1, y1) => line([[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]);
+        const ell = (cx, cy, rx, ry, a0 = 0, a1 = Math.PI * 2) => line(Array.from({ length: 41 }, (_, i) => { const a = a0 + (a1 - a0) * i / 40; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; }));
+        const stripes = Array.from({ length: 12 }, (_, i) => i % 2 ? '' : `<polygon class="st" points="${[[0, i / 12], [1, i / 12], [1, (i + 1) / 12], [0, (i + 1) / 12]].map(([x, y]) => pt(x, y).join(',')).join(' ')}"/>`).join('');
+        const pitch = `<svg class="xa-pitch" style="${box(0, 0, 1080, CB)}" viewBox="0 0 1080 ${CB}">
+            <defs><linearGradient id="xaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient></defs>
+            <polygon class="turf" points="${[[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y]) => pt(x, y).join(',')).join(' ')}"/>${stripes}
+            <g class="ln">${rect(0, 0, 1, 1)}${line([[0, .5], [1, .5]])}${ell(.5, .5, .135, .087)}${rect(.2035, 0, .7965, .157)}${rect(.365, 0, .635, .052)}
+            ${rect(.2035, .843, .7965, 1)}${rect(.365, .948, .635, 1)}${ell(.5, .157, .088, .057, .65, Math.PI - .65)}${ell(.5, .843, .088, .057, Math.PI + .65, Math.PI * 2 - .65)}</g></svg>`;
+        const sz = (p, s) => s * (.78 + .22 * g(p.y));
+        // the keeper stands on the goal line; everyone else is spread over the rest, so the back line keeps clear of him
+        const at = p => pt(.06 + p.x * .88, p.pos === 'GK' && p.y > .9 ? .955 : .03 + Math.max(0, p.y - .04) / .72 * .7);
+        const s0 = fit(sq ? 96 : 112, 54, (p, s) => { const [x, y] = at(p), r = sz(p, s) / 2, w = Math.max(r * 2, 1.6 * sz(p, s)) / 2; return [x - w, y - r, x + w, y + r + 40 * sz(p, s) / s + 4]; });
+        const dots = xi.map(p => {
+          const [x, y] = at(p), s = sz(p, s0), m = String(mark(p));
+          return `<div class="xa-pl ${p.pos === 'GK' ? 'gk' : ''}" style="left:${Math.round(x)}px;top:${Math.round(y)}px;--s:${s.toFixed(1)}px">
+            <div class="xa-disc"><b class="${m.length > 2 ? 'sm' : ''}">${mark(p)}</b></div>${!byNum && p.num ? `<i class="xa-num">${P(p.num)}</i>` : ''}${cap(p)}
+            <div class="xa-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
         }).join('');
-        return sec('head', `<div class="pitch-head" style="${box(70, 110, 940, 130)}">${ph(0, 0, 0, 110, 110, 'crest inl')}<div><div class="xi-team" data-fit="w" data-min=".5">${P(d.title)}</div><div class="xi-sub">${P(d.team)}${d.formation ? ' · ' + P(d.formation) : ''}</div></div></div>`)
-          + `<div class="field ${L}" style="${box(fx, fy, fw, fh)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
-          + sec('players', `<div class="mv-in">${dots}</div>`)
-          + sec('subs', `<div class="subs" style="${box(70, CB - 175, 940, 150)}"><b>${t('বদলি', 'Subs')}:</b> ${P(d.subs)}${d.coach ? `<div class="coach"><b>${t('কোচ', 'Coach')}:</b> ${P(d.coach)}</div>` : ''}</div>`, !!(d.subs || d.coach));
+        return `<div class="xa-beams"></div>` + pitch
+          + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xa-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 100 : 124, sq ? 100 : 124, 'crest inl')}
+              <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${P(d.match)} ${fm}</div></div></div>`)
+          + sec('players', `<div class="mv-in">${dots}</div>`) + subs('xa');
       },
     },
 

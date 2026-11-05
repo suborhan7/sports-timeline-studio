@@ -14,7 +14,7 @@ The picker has shelves. Every card has two or three designs.
 | --- | --- |
 | ক্রিকেট (cricket) | Cricket score, fifty, century, knock (X off Y, with a DUCK stamp on 0), big knock (bold), wicket, five-for, brilliant over, expensive over (ball by ball), score update, innings break (target worked out), match result + player of the match, result (bold), recent form (bar chart, 50+ highlighted), toss |
 | টেস্ট (Test) | Test hundred, Test fifty, Test five-for, stumps / lunch / tea (two innings), Test result with series line |
-| ফুটবল (football) | Football score, football XI on the pitch, goal, result (bold), red card, player rating (gauge), transfer (crest → crest), match day |
+| ফুটবল (football) | Football score, football XI on the pitch (24 formations; 3D pitch, square photo cards or shirt board; "LW: name" sets a position), goal, result (bold), red card, player rating (gauge), transfer (crest → crest), match day |
 | খবর ও সাধারণ (news & general) | Instant news, breaking news, quote, did you know?, status (in the XI, ruled out…), hot take, record / achievement, photo frame |
 | তুলনা (compare) | Player vs player (stats side by side or as bars, the better number highlighted; add ↓ to a stat where lower is better), who's better?, MVP / player of the month |
 | দল ও টেবিল (teams & tables) | Playing XI list, squad, stats, top list, points table, fixtures |
@@ -37,7 +37,7 @@ The switch at the top turns the studio panel and the poster to English (labels, 
 - **Text always fits**: long headlines and lists shrink to their box. `*word*` colours a word.
 - **Bangla digits**: type 2-1 and the poster shows ২-১ (switch in রং আর ফন্ট).
 - **Logo corner and colour**: the logo goes to the calmest allowed corner and turns green on a light spot, white/gold on a busy photo.
-- **Photo library**: save a player's photo once (*লাইব্রেরিতে রাখো*); next time his name is typed, the photo appears. Names on the football pitch card show faces from the library too.
+- **Photo library**: save a player's photo once (*লাইব্রেরিতে রাখো*); next time his name is typed, the photo appears. The photo cards design of the football XI shows faces from the library too.
 
 Everything is still adjustable: click any part of the poster to drag it, size it (mouse wheel or − / +), centre it, remove it; undo with Ctrl+Z. Tap a picked part again to pick one piece inside it (a team name, a score, one line) and move or size just that; ⬚ goes back to the whole part. Size anything by dragging the green dot on the corner of the selection or by pinching with two fingers. A picked text part also gets **অ− / অ+** (text size only) and **⇤ ≡ ⇥** (left / centre / right). A photo moved or zoomed out inside its frame gets a soft blurred fill instead of an empty strip. The editor bar is one slim row; its move and size buttons appear only after you pick a part, and the help hides behind ⓘ. *পোস্টারে কী কী থাকবে* switches parts on and off.
 
