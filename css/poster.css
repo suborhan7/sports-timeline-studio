@@ -600,3 +600,12 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
 .xk-name { position: absolute; left: calc(var(--s) * -.5 - 10px); width: calc(var(--s) + 20px); top: calc(var(--s) * .22); text-align: center; z-index: 2; }
 .xk-name > div { font-size: calc(var(--s) * .14 + 6px); font-weight: 800; }
 .xk-name span { display: inline-block; background: color-mix(in srgb, var(--bg) 82%, transparent); color: var(--ink); border: 2px solid var(--acc); border-radius: 99px; padding: .16em .7em .04em; }
+
+/* XI "just the XI": slim title, no match line or number chips */
+.xp-head.big .xi-team { font-size: 84px; }
+.xp-head.big.sq .xi-team { font-size: 64px; }
+.xp-head.big .xp-kick { font-size: 22px; padding: 7px 16px 4px; }
+.xk-head.big .xp-kick { padding: 0; font-size: 26px; }
+.xp-head.big .xp-sub > :not(.ph) { display: none; }
+.xp-head.big .xp-sub:not(:has(.ph)) { display: none; }
+.mv-in.big .xa-num, .mv-in.big .xk-num { display: none; }

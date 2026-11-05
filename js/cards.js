@@ -240,23 +240,26 @@
       logo: { arena: ['tr'], cards: ['tr'], kits: ['tr'] },
       fields: [['title', 'উপরের লেখা ~ Top line', 'text'], ['team', 'দলের নাম ~ Team', 'text'], ['match', 'ম্যাচ / টুর্নামেন্ট ~ Match / tournament', 'text'],
         ['formation', 'ফরমেশন ~ Formation', 'select:' + ST.formationOptions()],
-        ['mark', 'গোল চিহ্নে / জার্সিতে কী থাকবে ~ What the badge / shirt shows', 'select:pos=পজিশন (LW/CB) ~ Position (LW/CB),num=জার্সি নম্বর ~ Shirt number'],
+        ['focus', 'পোস্টারে কী কী থাকবে ~ What the poster shows', 'select:big=শুধু একাদশ, বড় করে ~ Just the XI (big),full=সব তথ্য (ম্যাচ, বদলি, কোচ) ~ All details (match / subs / coach)'],
+        ['mark', 'গোল চিহ্নে কী থাকবে (৩ডি মাঠ) ~ What the badge shows (3D pitch)', 'select:pos=পজিশন (LW/CB) ~ Position (LW/CB),num=জার্সি নম্বর ~ Shirt number'],
         ['players', 'খেলোয়াড় (গোলরক্ষক আগে, তারপর পেছন থেকে সামনে, প্রতি লাইন বাম→ডান; নম্বর আগে দিতে পারো; "LW: নাম" লিখলে পজিশন বদলাবে; (c) অধিনায়ক) ~ Players (keeper first, then back to front, each line left→right; a number first is fine; "LW: name" sets the position; (c) captain)', 'area', 11],
         ['subs', 'বদলি (কমা দিয়ে) ~ Subs (commas)', 'area', 2], ['coach', 'কোচ (ঐচ্ছিক) ~ Coach (optional)', 'text']],
       photos: [{ label: 'দলের লোগো ~ Team crest', mode: 'logo', team: 1 }].concat(Array.from({ length: 11 }, (_, k) => ({
         label: `খেলোয়াড় ${k + 1} এর ছবি ~ Player ${k + 1} photo`, mode: 'scene', only: ['cards'],
         labelOf: d => { const p = xiOf(d)[k]; return p && p.name ? `${p.pos} · ${p.name}` : ''; } }))),
-      data: { title: 'শুরুর একাদশ', team: 'বাংলাদেশ', match: 'বনাম ভারত · এশিয়ান কাপ বাছাই', formation: '4-3-3', mark: 'pos',
+      data: { title: 'শুরুর একাদশ', team: 'বাংলাদেশ', match: 'বনাম ভারত · এশিয়ান কাপ বাছাই', formation: '4-3-3', mark: 'pos', focus: 'big',
         players: '1 মিতুল মারমা (GK)\n2 শাকিল আহাদ\n5 তারিক কাজী\n4 তপু বর্মন\n3 সাদ উদ্দিন\n8 হামজা চৌধুরী\n6 জামাল ভূঁইয়া (c)\n10 সোহেল রানা\n7 রাকিব হোসেন\n9 মোরসালিন\n11 শমিত সোম',
         subs: 'সুজন, ফাহামেদুল, ঋদয়, রহমত, মোহাম্মদ হৃদয়, পাপ্পু', coach: 'হাভিয়ের কাবরেরা' },
-      dataEn: { title: 'Starting XI', team: 'Bangladesh', match: 'vs India · Asian Cup qualifier', formation: '4-3-3', mark: 'pos',
+      dataEn: { title: 'Starting XI', team: 'Bangladesh', match: 'vs India · Asian Cup qualifier', formation: '4-3-3', mark: 'pos', focus: 'big',
         players: '1 Mitul Marma (GK)\n2 Shakil Ahad\n5 Tariq Kazi\n4 Topu Barman\n3 Saad Uddin\n8 Hamza Choudhury\n6 Jamal Bhuyan (c)\n10 Sohel Rana\n7 Rakib Hossain\n9 Morsalin\n11 Shamit Shome',
         subs: 'Sujon, Fahamedul, Ridoy, Rahmat, Mohammad Hridoy, Pappu', coach: 'Javier Cabrera' },
       render(d, c) {
         const { L, CB, H, P, sec, ph, t } = c;
         const sq = H < 1200, story = H > 1500, xi = xiOf(d), byNum = (d.mark || 'pos') === 'num';
-        const sh = d.subs || d.coach ? (sq ? 96 : story ? 150 : 116) : 0;
-        const y0 = story ? 120 : sq ? 44 : 60, hh = story ? 300 : sq ? 170 : 220;
+        // "just the XI": no match line, subs, coach or number chips, a slim title, and the pitch takes the rest
+        const big = d.focus !== 'full';
+        const sh = !big && (d.subs || d.coach) ? (sq ? 96 : story ? 150 : 116) : 0;
+        const y0 = story ? 120 : sq ? 40 : 56, hh = big ? (story ? 200 : sq ? 108 : 136) : story ? 300 : sq ? 170 : 220;
         const fy = y0 + hh + (sq ? 6 : story ? 50 : 24), fb = CB - sh - (sh ? 24 : 0) - (sq ? 16 : 30);
         const cap = p => p.tags.includes('c') ? '<i class="xp-c">C</i>' : '';
         const mark = p => P(byNum ? (p.num || p.pos) : p.pos);
@@ -297,10 +300,10 @@
               <div class="xc-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
           }).join('');
           return `<div class="xc-band" style="${box(0, 0, 1080, y0 + hh + 34)}"></div>`
-            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xc-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 96 : 120, sq ? 96 : 120, 'crest inl')}
-                <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${P(d.match)} ${fm}</div></div></div>`)
+            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} ${big ? 'big' : ''} xc-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 96 : 120, sq ? 96 : 120, 'crest inl')}
+                <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub"><span>${P(d.match)}</span> ${fm}</div></div></div>`)
             + `<div class="xc-field" style="${box(fx, fy, fw, fh)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
-            + sec('players', `<div class="mv-in">${tiles}</div>`) + subs('xc');
+            + sec('players', `<div class="mv-in ${big ? 'big' : ''}">${tiles}</div>`) + subs('xc');
         }
 
         if (L === 'kits') {
@@ -313,13 +316,13 @@
             const [x, y] = at(p, S), gk = p.pos === 'GK';
             return `<div class="xk-pl ${gk ? 'gk' : ''}" style="left:${Math.round(x)}px;top:${Math.round(y)}px;--s:${S}px">
               <svg class="xk-shirt" viewBox="0 0 100 100"><path d="${SHIRT}"/><path class="cl" d="M41 5Q50 15 59 5"/></svg>
-              <b class="xk-mk ${String(mark(p)).length > 2 ? 'sm' : ''}">${mark(p)}</b>${byNum ? '' : p.num ? `<i class="xk-num">${P(p.num)}</i>` : ''}${cap(p)}
+              ${p.num ? `<b class="xk-mk">${P(p.num)}</b>` : ''}${cap(p)}
               <div class="xk-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
           }).join('');
           return `<div class="xk-pitch" style="${box(0, fy - 20, 1080, fb - fy + 40)}"><i class="half"></i><i class="circ"></i><i class="box-t"></i><i class="box-b"></i></div>`
-            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xk-head" style="${box(60, y0, 700, hh)}"><div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div>
+            + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} ${big ? 'big' : ''} xk-head" style="${box(60, y0, 700, hh)}"><div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div>
                 <div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${ph(0, 0, 0, sq ? 54 : 64, sq ? 54 : 64, 'crest inl')}<span>${P(d.match)}</span> ${fm}</div></div></div>`)
-            + sec('players', `<div class="mv-in">${shirts}</div>`) + subs('xk');
+            + sec('players', `<div class="mv-in ${big ? 'big' : ''}">${shirts}</div>`) + subs('xk');
         }
 
         // arena: a pitch tipped back under stadium lights, drawn in perspective; badges shrink a little towards the far end
@@ -347,9 +350,9 @@
             <div class="xa-name"><div data-fit="w" data-min=".45"><span>${P(p.name)}</span></div></div></div>`;
         }).join('');
         return `<div class="xa-beams"></div>` + pitch
-          + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} xa-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 100 : 124, sq ? 100 : 124, 'crest inl')}
-              <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub">${P(d.match)} ${fm}</div></div></div>`)
-          + sec('players', `<div class="mv-in">${dots}</div>`) + subs('xa');
+          + sec('head', `<div class="xp-head ${sq ? 'sq' : ''} ${big ? 'big' : ''} xa-head" style="${box(60, y0, 720, hh)}">${ph(0, 0, 0, sq ? 100 : 124, sq ? 100 : 124, 'crest inl')}
+              <div><div class="xp-kick ${t('', 'en')}">${P(d.title)}</div><div class="xi-team" data-fit="w" data-min=".45">${P(d.team)}</div><div class="xp-sub"><span>${P(d.match)}</span> ${fm}</div></div></div>`)
+          + sec('players', `<div class="mv-in ${big ? 'big' : ''}">${dots}</div>`) + subs('xa');
       },
     },
 
