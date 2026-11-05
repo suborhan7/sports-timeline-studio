@@ -275,7 +275,11 @@
         };
         // tiles and shirts are tall: the keeper gets a full line's gap below the back line instead of the pitch's real one
         const R = ((ST.FORMATIONS[d.formation] || {}).rows || [0, 0, 0]).length;
-        if (L !== 'arena') xi.forEach(p => { if (p.pos === 'GK' && p.y > .9) p.y = .76 + Math.max(.2, .7 / Math.max(1, R - 1)) * .9; });
+        if (L !== 'arena') {
+          xi.forEach(p => { if (p.pos === 'GK' && p.y > .9) p.y = .76 + Math.max(.2, .7 / Math.max(1, R - 1)) * .95; });
+          // and each line stands level (no pushed-up full-backs or dropped wingers), which leaves room for bigger tiles
+          const y0s = xi.map(p => p.y); xi.forEach((p, i) => { const row = y0s.filter(y => Math.abs(y - y0s[i]) < .08); p.y = row.reduce((a, b) => a + b, 0) / row.length; });
+        }
         const ys = xi.map(p => p.y), yMin = Math.min(...ys), yMax = Math.max(...ys);
 
         if (L === 'cards') {
@@ -302,9 +306,9 @@
         if (L === 'kits') {
           // top-down striped pitch across the whole poster, every player a shirt with the number (or position) on it
           const fx = 30, fw = 1020, fh = fb - fy;
-          const at = (p, S) => { const m = S / 2 + 40, top = fy + S * .5, bot = fb - S * .75;
+          const at = (p, S) => { const m = S / 2 + 14, top = fy + S * .48, bot = fb - S * .62;
             return [fx + m + p.x * (fw - 2 * m), top + (p.y - yMin) / Math.max(.01, yMax - yMin) * (bot - top)]; };
-          const S = fit(sq ? 120 : 150, 56, (p, S) => { const [x, y] = at(p, S); return [x - S / 2 - 30, y - S / 2 - 6, x + S / 2 + 30, y + S / 2 + S * .36 + 14]; });
+          const S = fit(sq ? 170 : story ? 260 : 220, 56, (p, S) => { const [x, y] = at(p, S); return [x - S / 2 - 8, y - S / 2 - 4, x + S / 2 + 8, y + S * .5 + 10]; });
           const shirts = xi.map((p, i) => {
             const [x, y] = at(p, S), gk = p.pos === 'GK';
             return `<div class="xk-pl ${gk ? 'gk' : ''}" style="left:${Math.round(x)}px;top:${Math.round(y)}px;--s:${S}px">
