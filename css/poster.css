@@ -620,3 +620,32 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
 .xk-chest.solo small { font-size: calc(var(--s) * .2); background: none; }
 .xk-pl.gk .xk-chest { color: var(--bg); }
 .xk-pl.gk .xk-chest small { background: color-mix(in srgb, var(--bg) 14%, transparent); }
+
+/* XI line-up list: glass panel with the list, the star cut out beside it on broken shards of colour */
+.xl-shards { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 52%, color-mix(in srgb, var(--acc) 85%, transparent) 52% 54.5%, transparent 54.5%),
+    linear-gradient(115deg, transparent 58%, color-mix(in srgb, var(--acc2) 70%, transparent) 58% 66%, transparent 66%),
+    linear-gradient(65deg, transparent 70%, color-mix(in srgb, var(--acc2) 35%, transparent) 70% 82%, transparent 82%),
+    linear-gradient(160deg, transparent 0 62%, color-mix(in srgb, var(--acc) 18%, transparent) 62% 75%, transparent 75%); }
+.xl-panel { display: flex; flex-direction: column; padding: 34px 34px 20px; border-radius: 30px; overflow: hidden;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--pan) 92%, transparent), color-mix(in srgb, var(--bg) 88%, transparent));
+  border: 2px solid color-mix(in srgb, var(--ink) 12%, transparent); box-shadow: 0 30px 60px rgba(0,0,0,.35); }
+.xl-panel::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: linear-gradient(var(--acc), var(--acc2)); }
+.xl-top { display: flex; flex-direction: column; justify-content: flex-end; flex: none; }
+.xl-team { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 700; letter-spacing: .04em; color: var(--mute); margin-bottom: 6px; }
+.xl-team span { white-space: nowrap; overflow: hidden; flex: 1; min-width: 0; }
+.xl-t1, .xl-t2 { font-family: var(--hf); font-weight: 900; font-size: 112px; line-height: 1.12; padding-bottom: .06em; white-space: nowrap; overflow: hidden; color: var(--ink); }
+.xl-t2 { color: var(--acc); }
+.xl-t2.en { color: transparent; -webkit-text-stroke: 3px var(--acc); }
+.st.light .xl-panel { background: linear-gradient(170deg, color-mix(in srgb, #fff 92%, transparent), color-mix(in srgb, var(--bg) 92%, transparent)); box-shadow: 0 30px 60px rgba(0,0,0,.15); }
+.xl-panel.sq .xl-t1, .xl-panel.sq .xl-t2 { font-size: 84px; }
+.xl-rows { list-style: none; margin: 22px 0 0; padding: 0; flex: none; }
+.xl-rows li { display: flex; align-items: center; gap: .6em; border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+.xl-rows li:last-child { border-bottom: 0; }
+.xl-rows b { flex: 0 0 1.7em; font-family: var(--hf); font-weight: 900; color: var(--acc); text-align: right; }
+.xl-rows span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; font-weight: 700; color: var(--ink); padding-top: .08em; }
+.xl-rows span em { color: var(--acc); font-style: normal; font-size: .75em; }
+.xl-rows i { flex: none; font-style: normal; font-family: var(--hf); font-weight: 800; font-size: .62em; min-width: 3.2em; text-align: center; padding: .3em .5em .2em;
+  border-radius: 99px; color: var(--acc-ink); background: var(--acc); }
+.xl-foot { flex: none; display: flex; align-items: center; margin-top: auto; border-top: 2px solid color-mix(in srgb, var(--ink) 12%, transparent); font-size: 26px; color: var(--mute); }
+.xl-foot span { white-space: nowrap; overflow: hidden; flex: 1; min-width: 0; }

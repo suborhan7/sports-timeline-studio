@@ -236,8 +236,8 @@
     // ---------------------------------------------------------------- football XI on the pitch
     {
       id: 'pitch', name: 'ফুটবল একাদশ (মাঠে)', icon: '🥅',
-      layouts: { arena: '৩ডি মাঠ, আলো ঝলমলে ~ 3D pitch under the lights', cards: 'ছবি কার্ড (চারকোনা) ~ Photo cards (square)', kits: 'জার্সি বোর্ড ~ Shirt board' },
-      logo: { arena: ['tr'], cards: ['tr'], kits: ['tr'] },
+      layouts: { arena: '৩ডি মাঠ, আলো ঝলমলে ~ 3D pitch under the lights', cards: 'ছবি কার্ড (চারকোনা) ~ Photo cards (square)', kits: 'জার্সি বোর্ড ~ Shirt board', list: 'লাইনআপ তালিকা + বড় ছবি ~ Line-up list + big photo' },
+      logo: { arena: ['tr'], cards: ['tr'], kits: ['tr'], list: ['tr'] },
       fields: [['title', 'উপরের লেখা ~ Top line', 'text'], ['team', 'দলের নাম ~ Team', 'text'], ['match', 'ম্যাচ / টুর্নামেন্ট ~ Match / tournament', 'text'],
         ['formation', 'ফরমেশন ~ Formation', 'select:' + ST.formationOptions()],
         ['focus', 'পোস্টারে কী কী থাকবে ~ What the poster shows', 'select:big=শুধু একাদশ, বড় করে ~ Just the XI (big),full=সব তথ্য (ম্যাচ, বদলি, কোচ) ~ All details (match / subs / coach)'],
@@ -246,7 +246,8 @@
         ['subs', 'বদলি (কমা দিয়ে) ~ Subs (commas)', 'area', 2], ['coach', 'কোচ (ঐচ্ছিক) ~ Coach (optional)', 'text']],
       photos: [{ label: 'দলের লোগো ~ Team crest', mode: 'logo', team: 1 }].concat(Array.from({ length: 11 }, (_, k) => ({
         label: `খেলোয়াড় ${k + 1} এর ছবি ~ Player ${k + 1} photo`, mode: 'scene', only: ['cards'],
-        labelOf: d => { const p = xiOf(d)[k]; return p && p.name ? `${p.pos} · ${p.name}` : ''; } }))),
+        labelOf: d => { const p = xiOf(d)[k]; return p && p.name ? `${p.pos} · ${p.name}` : ''; } })),
+        { label: 'বড় ছবির খেলোয়াড় (অটো কাটা) ~ Big player photo (auto cut-out)', mode: 'cut', only: ['list'] }),
       data: { title: 'শুরুর একাদশ', team: 'বাংলাদেশ', match: 'বনাম ভারত · এশিয়ান কাপ বাছাই', formation: '4-3-3', mark: 'pos', focus: 'big',
         players: '1 মিতুল মারমা (GK)\n2 শাকিল আহাদ\n5 তারিক কাজী\n4 তপু বর্মন\n3 সাদ উদ্দিন\n8 হামজা চৌধুরী\n6 জামাল ভূঁইয়া (c)\n10 সোহেল রানা\n7 রাকিব হোসেন\n9 মোরসালিন\n11 শমিত সোম',
         subs: 'সুজন, ফাহামেদুল, ঋদয়, রহমত, মোহাম্মদ হৃদয়, পাপ্পু', coach: 'হাভিয়ের কাবরেরা' },
@@ -284,6 +285,21 @@
           const y0s = xi.map(p => p.y); xi.forEach((p, i) => { const row = y0s.filter(y => Math.abs(y - y0s[i]) < .08); p.y = row.reduce((a, b) => a + b, 0) / row.length; });
         }
         const ys = xi.map(p => p.y), yMin = Math.min(...ys), yMax = Math.max(...ys);
+
+        if (L === 'list') {
+          // the line-up as a list on a glass panel, the star of the side cut out big beside it
+          const px = 44, pw = sq ? 600 : 590, py = y0, ph2 = CB - py - (sq ? 24 : 36);
+          const words = String(d.title || '').trim().split(/\s+/), last = words.length > 1 ? words.pop() : '';
+          const th = story ? 330 : sq ? 200 : 250, foot = big ? 0 : (sq ? 70 : 90);
+          const rh = (ph2 - th - foot - 40) / 11;
+          const rows = xi.map(p => `<li style="height:${rh.toFixed(1)}px"><b>${P(p.num)}</b><span data-fit="w" data-min=".5">${P(p.name)}${p.tags.includes('c') ? ` <em>(${t('অধি.', 'C')})</em>` : ''}</span><i>${P(p.pos)}</i></li>`).join('');
+          return `<div class="xl-shards"></div>` + ph(12, sq ? 520 : 470, story ? 520 : sq ? 120 : 160, sq ? 600 : 660, CB - (story ? 520 : sq ? 120 : 160), 'cut-glow')
+            + sec('panel', `<div class="xl-panel ${sq ? 'sq' : ''}" style="${box(px, py, pw, ph2)}">
+                <div class="xl-top" style="height:${th}px"><div class="xl-team">${ph(0, 0, 0, sq ? 44 : 54, sq ? 44 : 54, 'crest inl')}<span data-fit="w" data-min=".5">${P(d.team)}</span></div>
+                  <div class="xl-t1" data-fit="w" data-min=".4">${P(words.join(' '))}</div>${last ? `<div class="xl-t2 ${t('', 'en')}" data-fit="w" data-min=".4">${P(last)}</div>` : ''}</div>
+                <ol class="xl-rows" style="font-size:${Math.round(Math.min(40, rh * .52))}px">${rows}</ol>
+                ${big ? '' : `<div class="xl-foot" style="height:${foot}px"><span data-fit="w" data-min=".5">${P(d.match)}${d.formation ? ` · ${P(d.formation.replace(/D$/, ' ◆'))}` : ''}${d.coach ? ` · ${t('কোচ', 'Coach')}: ${P(d.coach)}` : ''}</span></div>`}</div>`);
+        }
 
         if (L === 'cards') {
           // flat pitch, every player a square photo tile with the name on a slanted band
