@@ -80,6 +80,8 @@
     if (slot.mode === 'logo' && !a.alpha) { src = await ST.clearLogoBg(src); a = await ST.analyse(src); }
     const p = { src, w: a.w, h: a.h, fx: a.fx, fy: a.fy, ty: a.ty, alpha: a.alpha, lum: a.lum, dx: 0, dy: 0, zoom: 1, name: keepName || '' };
     (photos[cid] ||= [])[i] = p;
+    // a crest the admin uploads is remembered under the team's name
+    if (!keepName && slot.mode === 'logo' && (slot.team || slot.flag)) keepCrest(libName(c, i), src);
     if (slot.mode === 'logo' && slot.team) ST.logoColor(src).then(col => { if (col) { teamColors[slot.team] = col; render(); } }).catch(() => {});
     render(); buildPhotos();
     if (slotMode(c, i, state.layouts[cid] || Object.keys(c.layouts)[0]) === 'cut' || slot.side) ensureCut(p);
@@ -113,13 +115,29 @@
   // ---------------------------------------------------------------- poster
   const box = (x, y, w, h) => `left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(w)}px;height:${Math.round(h)}px`;
   // a crest slot with no picture shows the country's flag when the team name is a country (বাংলাদেশ, India…)
-  const flagKeys = Object.keys(window.ST_FLAGS || {}).sort((a, b) => b.length - a.length);
+  // Bangla letters like য় can be typed two ways; NFC makes both the same, so every spelling finds its flag
+  const nf = s => String(s || '').normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' ');
+  const FLAGS = Object.fromEntries(Object.entries(window.ST_FLAGS || {}).map(([k, v]) => [nf(k), v]));
+  const flagKeys = Object.keys(FLAGS).sort((a, b) => b.length - a.length);
   function flagOf(name) {
-    const n = String(name || '').trim().toLowerCase(); if (!n) return '';
-    if (ST_FLAGS[n]) return ST_FLAGS[n];
-    const k = flagKeys.find(k => k.length > 3 && n.startsWith(k)); return k ? ST_FLAGS[k] : '';
+    const n = nf(name); if (!n) return '';
+    if (FLAGS[n]) return FLAGS[n];
+    const k = flagKeys.find(k => k.length > 3 && n.startsWith(k)); return k ? FLAGS[k] : '';
   }
   const teamName = (s, d) => s.flag ? d[s.flag] : s.team === 1 ? (d.t1 ?? d.team ?? d.winner) : s.team === 2 ? (d.t2 ?? d.opp ?? d.loser) : '';
+  /* the name a photo spot is kept under in the photo library: a player's name, or for a team's crest "লোগো <team>",
+     so a club crest uploaded once comes back by itself whenever that team is typed again, on any card */
+  const libName = (c, i) => { const s = c.photos[i], d = D()[c.id];
+    if (s.name) return d[s.name] || '';
+    const t = s.mode === 'logo' && (s.team || s.flag) ? String(teamName(s, d) || '').trim() : '';
+    return t ? 'লোগো ' + t : ''; };
+  async function keepCrest(name, src) {
+    if (!name || !BPG.lib.ok()) return;
+    try {
+      for (const r of await BPG.lib.find(name)) if (r.score === 3) await BPG.lib.remove(r.id);
+      await BPG.lib.add(name, await (await fetch(src)).blob());
+    } catch (e) {}
+  }
   const faceCache = {};
   function face(name) {
     if (!name) return '';
@@ -204,10 +222,10 @@
     c.photos.forEach((s, i) => { const p = pics()[i]; if (p && slotMode(c, i, L) === 'cut') ensureCut(p); });
     // a player slot with a name and no picture: try the photo library
     c.photos.forEach((s, i) => {
-      if (!s.name || pics()[i] || !BPG.lib.ok()) return;
-      const nm = D()[c.id][s.name]; if (!nm || libTried[c.id + i] === nm) return;
+      if (pics()[i] || !BPG.lib.ok()) return;
+      const nm = libName(c, i); if (!nm || libTried[c.id + i] === nm) return;
       libTried[c.id + i] = nm;
-      BPG.lib.find(nm).then(async r => { if (r[0] && r[0].score >= 2 && !pics()[i]) { await setPhoto(c.id, i, await ST.readFile(r[0].blob), nm); say(`লাইব্রেরি থেকে ${nm} এর ছবি বসানো হলো ✓`); } }).catch(() => {});
+      BPG.lib.find(nm).then(async r => { if (r[0] && r[0].score >= 2 && !pics()[i]) { await setPhoto(c.id, i, await ST.readFile(r[0].blob), nm); say(`লাইব্রেরি থেকে ${nm.replace(/^লোগো /, '')} এর ${nm.startsWith('লোগো ') ? 'লোগো' : 'ছবি'} বসানো হলো ✓`); } }).catch(() => {});
     });
     $('#caption').value = caption();
     save();
@@ -339,7 +357,7 @@
         <div class="slot-row"><label class="file">${tr(p ? 'বদলাও ~ Change' : 'ছবি দিন ~ Add photo')}<input type="file" accept="image/*" data-slot-file="${i}"></label>
         ${p ? `<button type="button" class="small" data-slot-clear="${i}">✕ ${tr('সরাও ~ Remove')}</button>` : ''}
         ${p && !p.alpha && slotMode(c, i, layout()) !== 'cut' ? `<button type="button" class="small ${p.wantCut ? 'on' : ''}" data-slot-cut="${i}">✂ ${tr(p.wantCut ? 'ব্যাকগ্রাউন্ড ফেরাও ~ Bring background back' : 'ব্যাকগ্রাউন্ড সরাও ~ Remove background')}</button>` : ''}
-        ${p && s.name && D()[c.id][s.name] && BPG.lib.ok() ? `<button type="button" class="small" data-slot-save="${i}" title="${tr('এই নামে পরেরবার নিজে থেকেই বসবে ~ Next time this name brings the photo by itself')}">${tr('লাইব্রেরিতে রাখো ~ Save to library')}</button>` : ''}</div></div></div>`;
+        ${p && s.name && libName(c, i) && BPG.lib.ok() ? `<button type="button" class="small" data-slot-save="${i}" title="${tr('এই নামে পরেরবার নিজে থেকেই বসবে ~ Next time this name brings the photo by itself')}">${tr('লাইব্রেরিতে রাখো ~ Save to library')}</button>` : ''}</div></div></div>`;
     }).join('');
   }
   $('#photos').addEventListener('change', async e => {
@@ -349,7 +367,7 @@
   $('#photos').addEventListener('click', async e => {
     const c = e.target.dataset.slotClear, s = e.target.dataset.slotSave, k = e.target.dataset.slotCut;
     if (k != null) { const p = pics()[+k]; p.wantCut = !p.wantCut; if (p.wantCut) ensureCut(p, true); render(); buildPhotos(); return; }
-    if (c != null) { pics()[+c] = undefined; libTried[state.card + c] = D()[state.card][card().photos[+c].name]; render(); buildPhotos(); }
+    if (c != null) { pics()[+c] = undefined; libTried[state.card + c] = libName(card(), +c); render(); buildPhotos(); }
     if (s != null) {
       const p = pics()[+s], name = D()[state.card][card().photos[+s].name];
       const blob = await (await fetch((p.cut || p).src)).blob();
