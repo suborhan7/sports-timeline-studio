@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><clipPath id="wi-s"><path id="wi-p" d="M256 66Q228 90 190 92L156 102 132 126Q142 152 136 178L130 292Q134 372 256 448 378 372 382 292L376 178Q370 152 380 126L356 102 322 92Q284 90 256 66Z"/></clipPath></defs>
+  <path fill="#7b0041" d="M0 0h512v512H0z"/>
+  <g transform="translate(256 262) scale(1.18) translate(-256 -257)">
+  <g clip-path="url(#wi-s)">
+    <path fill="#9fd3ee" d="M100 40h312v236H100z"/>
+    <path fill="#17179a" d="M100 276h312v200H100z"/>
+    <circle cx="322" cy="182" r="38" fill="#f2b312"/>
+    <path fill="#6fd39a" d="M196 360a72 46 0 0 1 144 0z"/>
+    <path fill="none" stroke="#8a4a14" stroke-width="15" stroke-linecap="round" d="M236 196q-14 48 2 96t32 66"/>
+    <g fill="#16a05a">
+      <path d="M236 192q-42-22-82 8 36-6 78 6z"/><path d="M236 192q-34-36-76-30 38 10 72 40z"/>
+      <path d="M236 192q-6-40 24-56-10 26-16 60z"/><path d="M236 192q36-36 74-22-36 4-68 30z"/>
+      <path d="M236 192q42-12 76 20-38-12-72-10z"/><path d="M236 192q-20 10-36 36 22-18 40-26z"/><path d="M236 192q22 6 34 32-18-18-36-22z"/>
+    </g>
+    <g fill="#f2b312"><path d="M280 268h8v94h-8zM294 268h8v94h-8zM308 268h8v94h-8zM278 262h40v7h-40z"/></g>
+  </g>
+  <use href="#wi-p" fill="none" stroke="#f2b312" stroke-width="7"/>
+  </g>
+</svg>
