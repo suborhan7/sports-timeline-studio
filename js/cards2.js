@@ -42,7 +42,7 @@
       render(d, c) {
         const { L, CB, T, P, sec, ph, t } = c;
         const duck = bat && o.duck && /^\s*[0০]\s*$/.test(d.runs);
-        const big = bat ? P(d.runs) : `${P(d.wkts)}/${P(d.runs)}`;
+        const big = bat ? ST.notOut(P(d.runs)) : `${P(d.wkts)}/${P(d.runs)}`;
         const sub = bat ? (has(d.balls) ? `${P(d.balls)} ${t('বলে', 'balls')}` : '') : (has(d.overs) ? `${P(d.overs)} ${t('ওভারে', 'overs')}` : '');
         const chips = chipsOf(bat ? [[d.fours, t('চার', 'Fours')], [d.sixes, t('ছক্কা', 'Sixes')], [sr(d.runs, d.balls), t('স্ট্রাইক রেট', 'Strike rate')]]
           : [[d.overs, t('ওভার', 'Overs')], [econ(d.runs, d.overs), t('ইকোনমি', 'Economy')], [d.maidens, t('মেডেন', 'Maidens')]], P);
@@ -64,7 +64,7 @@
           return ph(0, 500, CB * 0.3, 580, CB * 0.7, 'cut-glow') + sec('info', head)
             + sec('player', `<div class="pcol" style="${box(60, 150, 960, CB * 0.25)}"><div class="mword" data-fit="w" data-min=".4">${P(d.word)}</div><div class="xi-team multi" data-fit data-min=".3">${T(d.player)}</div></div>`)
             + sec('score', `<div class="rcol" style="${box(60, y0 + 20, 460, CB - y0 - 80)}">
-                <div class="rbox a" data-fit><span><b>${bat ? P(d.runs) : P(d.wkts)}</b><small>${bat ? t('রান', 'RUNS') : t('উইকেট', 'WICKETS')}</small></span></div>
+                <div class="rbox a" data-fit><span><b>${bat ? ST.notOut(P(d.runs)) : P(d.wkts)}</b><small>${bat ? t('রান', 'RUNS') : t('উইকেট', 'WICKETS')}</small></span></div>
                 <div class="rbox" data-fit><span><b>${bat ? P(d.balls) : P(d.runs)}</b><small>${bat ? t('বল', 'BALLS') : t('রান', 'RUNS')}</small></span></div>
                 <div class="chips sm">${chips}</div><div class="vsl">${vs}</div></div>`) + stamp;
         }

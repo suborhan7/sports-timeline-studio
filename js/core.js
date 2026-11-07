@@ -70,7 +70,10 @@
     if (bn) t = ST.bnDigits(t);
     return t.replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
   };
-  ST.plain = (s, bn = ST.useBn) => { const t = ST.esc(String(s ?? '').replace(/\*/g, '')); return bn ? ST.bnDigits(t) : t; };
+  // *pairs* lose their stars; a lone star after a number (200*, a not-out score) stays
+  ST.plain = (s, bn = ST.useBn) => { const t = ST.esc(String(s ?? '').replace(/\*([^*]+)\*/g, '$1').replace(/(?<![0-9০-৯])\*/g, '')); return bn ? ST.bnDigits(t) : t; };
+  // a not-out score with its star raised in the accent colour
+  ST.notOut = html => String(html).replace(/([0-9০-৯])\*/g, '$1<i class="nout">*</i>');
   ST.lines = s => String(s || '').split('\n').map(l => l.trim()).filter(Boolean);
   // "a | b | c" rows
   ST.rows = s => ST.lines(s).map(l => l.split('|').map(c => c.trim()));

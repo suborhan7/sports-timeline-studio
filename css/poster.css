@@ -649,3 +649,7 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
   border-radius: 99px; color: var(--acc-ink); background: var(--acc); }
 .xl-foot { flex: none; display: flex; align-items: center; margin-top: auto; border-top: 2px solid color-mix(in srgb, var(--ink) 12%, transparent); font-size: 26px; color: var(--mute); }
 .xl-foot span { white-space: nowrap; overflow: hidden; flex: 1; min-width: 0; }
+
+/* not-out star: raised, in the accent colour */
+.nout { font-style: normal; color: var(--acc); font-size: .55em; vertical-align: .7em; margin-left: .04em; line-height: 0; }
+.rbox.a .nout { color: var(--acc-ink); }
