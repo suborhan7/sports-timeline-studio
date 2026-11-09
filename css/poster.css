@@ -653,3 +653,5 @@ table.pt .chip { display: inline-grid; place-items: center; width: 1.5em; height
 /* not-out star: raised, in the accent colour */
 .nout { font-style: normal; color: var(--acc); font-size: .55em; vertical-align: .7em; margin-left: .04em; line-height: 0; }
 .rbox.a .nout { color: var(--acc-ink); }
+
+table.pt img.tcrest { width: 1.35em; height: 1.35em; border-radius: 50%; object-fit: cover; margin-right: 14px; vertical-align: middle; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 25%, transparent); }

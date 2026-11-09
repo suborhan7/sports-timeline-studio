@@ -458,7 +458,7 @@
         const { L, CB, P, sec, ph } = c, head = d.head.split('|').map(s => s.trim()), rows = ST.rows(d.rows), q = +ST.enDigits(d.q) || 0;
         const n = Math.max(1, rows.length), top = 380, rh = Math.min(110, (CB - top - 80) / (n + 1));
         const tbl = `<table class="pt ${L}" style="--rh:${Math.round(rh)}px"><thead><tr><th>#</th>${head.map((h, i) => `<th class="${i ? '' : 'tl'}">${P(h)}</th>`).join('')}</tr></thead>
-          <tbody>${rows.map((r, i) => `<tr class="${i < q ? 'q' : ''}"><td class="pos">${P(i + 1)}</td>${r.map((v, j) => `<td class="${j ? (j === r.length - 1 ? 'pts' : '') : 'tl team'}">${j ? '' : `<i class="chip">${P(v.slice(0, 1))}</i>`}${P(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+          <tbody>${rows.map((r, i) => `<tr class="${i < q ? 'q' : ''}"><td class="pos">${P(i + 1)}</td>${r.map((v, j) => `<td class="${j ? (j === r.length - 1 ? 'pts' : '') : 'tl team'}">${j ? '' : (cr => cr ? `<img class="tcrest" src="${cr}" alt="">` : '')(c.crest(v))}${P(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
         return (L === 'glass' ? ph(1, 0, 0, 1080, CB, 'dim') : '')
           + sec('head', `<div class="pt-head" style="${box(60, 120, 960, 230)}">${ph(0, 0, 0, 150, 150, 'crest inl')}<div><div class="xi-team" data-fit="w" data-min=".5">${P(d.title)}</div><div class="band">${P(d.group)}</div></div></div>`)
           + sec('table', `<div class="pt-wrap" style="${box(50, top, 980, CB - top - 50)}">${tbl}</div>`);

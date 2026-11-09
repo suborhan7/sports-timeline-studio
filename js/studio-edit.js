@@ -181,10 +181,11 @@
     el.innerHTML = `<div class="se-row"><button type="button" data-se="undo" title="${tr('আগের মতো ~ Undo')} (Ctrl+Z)">↶</button><button type="button" data-se="redo" title="${tr('আবার ~ Redo')} (Ctrl+Y)">↷</button>
         <span class="se-name"></span><button type="button" data-se="help" class="se-help" title="${tr('কীভাবে ~ How to')}">ⓘ</button></div>
       <div class="se-row se-tools" hidden>
+        <button type="button" data-se="edit" class="se-edit" hidden></button>
         <button type="button" data-se="smaller" title="${tr('ছোট ~ Smaller')} (−)">−</button><span class="se-pct">100%</span><button type="button" data-se="bigger" title="${tr('বড় ~ Bigger')} (+)">+</button>
         <button type="button" data-se="left" title="←">←</button><button type="button" data-se="up" title="↑">↑</button><button type="button" data-se="down" title="↓">↓</button><button type="button" data-se="right" title="→">→</button>
         <button type="button" data-se="center" title="${tr('মাঝে আনো ~ Centre')}">⊕</button><button type="button" data-se="resetone" title="${tr('এটা আগের মতো ~ Reset this')}">↺</button><button type="button" data-se="parent" class="se-parent" title="${tr('পুরো অংশ বাছাই ~ Pick the whole part')}">⬚</button>
-        <button type="button" data-se="hide" class="se-hide" title="${tr('সরাও ~ Remove')} (Del)">✕</button></div>
+        <button type="button" data-se="hide" class="se-hide" title="${tr('সরাও ~ Remove')} (Del)">✕ <small>${tr('মুছুন ~ Delete')}</small></button></div>
       <div class="se-row se-tools se-text" hidden>
         <span class="se-lbl">${tr('লেখা ~ Text')}</span><button type="button" data-se="fsmaller" title="${tr('লেখা ছোট ~ Smaller text')}">অ−</button><span class="se-fpct">100%</span><button type="button" data-se="fbigger" title="${tr('লেখা বড় ~ Bigger text')}">অ+</button>
         <button type="button" data-se="al" data-al="l" title="${tr('বামে ~ Left')}">⇤</button><button type="button" data-se="al" data-al="c" title="${tr('মাঝে ~ Centre')}">≡</button><button type="button" data-se="al" data-al="r" title="${tr('ডানে ~ Right')}">⇥</button></div>
@@ -203,6 +204,9 @@
     $('.se-name', b).textContent = sel ? tr('বাছাই ~ Picked') + ': ' + label(sel.kind === 'photo' ? 'p' + sel.i : sel.key) : tr(NONE);
     if (sel && sel.kind === 'photo') $('.se-text', b).hidden = true;
     $('.se-parent', b).hidden = !(sel && sel.kind !== 'photo' && isItem(sel.key));
+    // ✎ jumps to what makes the picked thing: its line in the form, or the photo picker
+    const ed = $('.se-edit', b), can = !!(sel && o.editOf && o.editOf(pickOf(sel)));
+    ed.hidden = !can; if (can) ed.textContent = tr(sel.kind === 'photo' ? '✎ ছবি বদলাও ~ ✎ Change photo' : '✎ লেখা বদলাও ~ ✎ Edit text');
     if (sel && sel.kind !== 'photo') {
       const m = movesOf()[sel.key] || {};
       $('.se-fpct', b).textContent = Math.round((m.f || 1) * 100) + '%';
@@ -210,6 +214,7 @@
     }
     if (sel) $('.se-pct', b).textContent = Math.round((sel.kind === 'photo' ? o.photo.get(sel.i).zoom : (movesOf()[sel.key] || {}).s || 1) * 100) + '%';
   }
+  const pickOf = s => s.kind === 'photo' ? { photo: s.i } : { el: isItem(s.key) ? itemEl(s.key) : secEl(s.key) };
   function select(s) { sel = s; overlay(); refreshBar(); }
 
   // ---- actions on the selection ----
@@ -256,6 +261,7 @@
     if (a === 'undo') return undo();
     if (a === 'redo') return redo();
     if (!sel) return;
+    if (a === 'edit') { const f = o.editOf && o.editOf(pickOf(sel)); if (f) f(); return; }
     const step = 1;
     if ((a === 'fsmaller' || a === 'fbigger' || a === 'al') && sel.kind !== 'photo') {
       const m = secOf(sel.key);
@@ -363,7 +369,7 @@
       .se-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:6px}.se-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.se-bar .tip{font-size:12px;margin:0 0 8px;opacity:.85}.se-row[hidden]{display:none}
       .se-row button{padding:3px 7px;min-width:30px}.se-row button:disabled{opacity:.4;cursor:default}
       .se-name{font-size:12px;color:#19e28a;margin-left:4px}.se-pct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}
-      .se-hide{color:#ff8a9a}.se-handle{position:absolute;right:-13px;bottom:-13px;width:26px;height:26px;border-radius:50%;background:#19e28a;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:auto;cursor:nwse-resize;touch-action:none}
+      .se-hide{color:#ff8a9a}.se-hide small{font-size:12px;margin-left:2px}.se-edit{background:#19e28a!important;color:#062014!important;font-weight:700}.se-handle{position:absolute;right:-13px;bottom:-13px;width:26px;height:26px;border-radius:50%;background:#19e28a;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:auto;cursor:nwse-resize;touch-action:none}
       .se-handle::after{content:'';position:absolute;inset:-12px}.se-lbl{font-size:12px;opacity:.75;margin-right:2px}.se-fpct{min-width:42px;text-align:center;font-size:12px;color:#cfd6e4}.se-row button.on{border-color:#19e28a;color:#19e28a}
       .mv[data-align=l] *{text-align:left!important}.mv[data-align=c] *{text-align:center!important}.mv[data-align=r] *{text-align:right!important}
       .mv{position:absolute;inset:0;pointer-events:none}.mv>*{pointer-events:auto;cursor:move}`;

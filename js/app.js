@@ -207,7 +207,9 @@
       return `<div class="ph ${mode} ${cls}" style="${box(x, y, w, h)}">${fill}<img data-p="${i}" src="${u}" style="${ST.place(q, w, h, as)}"></div>`;
     };
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
-    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, t: ST.t };
+    // a team's small crest: one saved in the photo library ("লোগো <team>"), else the country's flag, else nothing
+    const crest = name => { const n = String(name || '').trim(); if (!n) return ''; const f = face('লোগো ' + n); if (f) return f; const fl = flagOf(n); return fl ? `flags/${fl}.svg` : ''; };
+    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, crest, t: ST.t };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
     const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111', ...(c.vars || {}) }).map(([k, v]) => `--${k}:${v}`).join(';')
       + `;--hf:'${state.hf}';--hw:${f.w || 700};--hs:${f.stretch || '100%'};--bf:'${state.bf}';--bw:${fb.bw || 500};height:${Hh}px`;
@@ -498,6 +500,28 @@
       get: i => live(i) || { dx: 0, dy: 0, zoom: 1 }, changed: () => {}, box: el => el.closest('.ph'),
     },
     cancelDrag: () => { drag = null; frame.classList.remove('dragging'); },
+    // what to open for the picked thing: the form line whose text is in it, or the photo spot's file picker
+    editOf: pick => {
+      if (pick.photo != null) { const inp = $(`[data-slot-file="${pick.photo}"]`); return inp && (() => inp.click()); }
+      const txt = pick.el && pick.el.textContent.replace(/\s+/g, ' '); if (!txt) return null;
+      let best = null, len = 0, line = '';
+      $$('#fields [data-f]').forEach(i => {
+        if (i.tagName === 'SELECT') return;
+        String(i.value || '').split('\n').forEach(l => {
+          for (const part of l.split('|')) {
+            const v = part.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+            if (!v || v.length <= len) continue;
+            if (txt.includes(v) || txt.includes(ST.bnDigits(v))) { best = i; len = v.length; line = l; }
+          }
+        });
+      });
+      return best && (() => {
+        const sec = best.closest('details'); if (sec) sec.open = true;
+        best.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        best.focus({ preventScroll: true });
+        if (best.tagName === 'TEXTAREA' && line) { const at = best.value.indexOf(line); if (at >= 0) best.setSelectionRange(at, at + line.length); }
+      });
+    },
     extras: {
       get: () => (pics()).map((p, i) => { const t = p && live(i); return t ? [t.dx, t.dy, t.zoom] : null; }),
       set: v => (v || []).forEach((x, i) => { const t = live(i); if (t && x) [t.dx, t.dy, t.zoom] = x; }),
