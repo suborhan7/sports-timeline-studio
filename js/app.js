@@ -223,7 +223,9 @@
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
     // a team's small crest: one saved in the photo library ("লোগো <team>"), else the country's flag, else nothing
     const crest = name => { const n = String(name || '').trim(); if (!n) return ''; const f = face('লোগো ' + n); if (f) return f; const fl = flagOf(n); return fl ? flagSrc(fl) : ''; };
-    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, crest, t: ST.t };
+    // the same, saying which it is: a flag fills its box, a saved crest keeps its own shape
+    const crestOf = name => { const n = String(name || '').trim(); if (!n) return null; const f = face('লোগো ' + n); if (f) return { src: f, flag: false }; const fl = flagOf(n); return fl ? { src: flagSrc(fl), flag: true } : null; };
+    const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, crest, crestOf, t: ST.t };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
     const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111', ...(c.vars || {}) }).map(([k, v]) => `--${k}:${v}`).join(';')
       + `;--hf:'${state.hf}';--hw:${f.w || 700};--hs:${f.stretch || '100%'};--bf:'${state.bf}';--bw:${fb.bw || 500};height:${Hh}px`;
