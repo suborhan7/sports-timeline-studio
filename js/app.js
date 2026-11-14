@@ -124,6 +124,20 @@
     if (FLAGS[n]) return FLAGS[n];
     const k = flagKeys.find(k => k.length > 3 && n.startsWith(k)); return k ? FLAGS[k] : '';
   }
+  /* Flag pictures are fetched once (three tries on a weak connection) and kept as blob: links, so the poster, which is
+     rebuilt on every key press, shows them at once instead of an empty ring while each new <img> loads again. */
+  const flagUrls = {}, flagWait = {};
+  function flagSrc(code) {
+    if (flagUrls[code]) return flagUrls[code];
+    if (!flagWait[code]) flagWait[code] = (async () => {
+      for (let k = 0; k < 3; k++) {
+        try { const r = await fetch(`flags/${code}.svg`, k ? { cache: 'reload' } : {}); if (r.ok) { flagUrls[code] = URL.createObjectURL(await r.blob()); render(); return; } } catch (e) {}
+        await new Promise(ok => setTimeout(ok, 800 * (k + 1)));
+      }
+      delete flagWait[code];
+    })();
+    return `flags/${code}.svg`;
+  }
   const teamName = (s, d) => s.flag ? d[s.flag] : s.team === 1 ? (d.t1 ?? d.team ?? d.winner) : s.team === 2 ? (d.t2 ?? d.opp ?? d.loser) : '';
   /* the name a photo spot is kept under in the photo library: a player's name, or for a team's crest "লোগো <team>",
      so a club crest uploaded once comes back by itself whenever that team is typed again, on any card */
@@ -199,7 +213,7 @@
       if (!s) return '';
       const shape = cls.includes('crest') ? 'crest' : '';
       const fl = !p && mode === 'logo' && flagOf(teamName(s, D()[c.id]));
-      if (fl) return `<div class="ph logo flag ${shape} ${cls}" style="${box(x, y, w, h)}"><img class="flag-img" data-slot="${i}" src="flags/${fl}.svg" alt=""></div>`;
+      if (fl) return `<div class="ph logo flag ${shape} ${cls}" style="${box(x, y, w, h)}"><img class="flag-img" data-slot="${i}" src="${flagSrc(fl)}" decoding="sync" alt=""></div>`;
       if (!p) return `<div class="ph ${mode} ${shape} ${cls} empty" style="${box(x, y, w, h)}"><div class="ph-hint" data-slot="${i}">📷<br>${ST.esc(tr(s.label).replace(/\s*\(.*\)/, ''))}</div></div>`;
       const q = shown(p, mode), as = mode === 'cut' && q === p && !p.alpha ? 'scene' : mode;
       // a photo moved or zoomed out inside its frame: a soft blurred copy fills the frame, so there is never an empty strip
@@ -208,7 +222,7 @@
     };
     const sec = (key, html, on = true) => on ? `<div class="mv" data-move="${key}">${html}</div>` : '';
     // a team's small crest: one saved in the photo library ("লোগো <team>"), else the country's flag, else nothing
-    const crest = name => { const n = String(name || '').trim(); if (!n) return ''; const f = face('লোগো ' + n); if (f) return f; const fl = flagOf(n); return fl ? `flags/${fl}.svg` : ''; };
+    const crest = name => { const n = String(name || '').trim(); if (!n) return ''; const f = face('লোগো ' + n); if (f) return f; const fl = flagOf(n); return fl ? flagSrc(fl) : ''; };
     const ctx = { L, H: Hh, CB, T, P, sec, ph, box, has: i => !!pics()[i], face, crest, t: ST.t };
     const f = ST.FONTS[state.hf] || {}, fb = ST.FONTS[state.bf] || {};
     const vars = Object.entries({ bg: th.bg, bg2: th.bg2, ink: th.ink, mute: th.mute, acc: th.acc, acc2: th.acc2, pan: th.pan, pink: th.pink, 'acc-ink': th.accInk || '#111', ...(c.vars || {}) }).map(([k, v]) => `--${k}:${v}`).join(';')
